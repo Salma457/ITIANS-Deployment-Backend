@@ -1,0 +1,72 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class Job extends Model
+{
+    // Job Type Constants
+    public const TYPE_FULL_TIME = 'Full-time';
+    public const TYPE_PART_TIME = 'Part-time';
+    public const TYPE_INTERNSHIP = 'Internship';
+    public const TYPE_FREELANCE = 'Freelance';
+
+    // Status Constants
+    public const STATUS_OPEN = 'Open';
+    public const STATUS_CLOSED = 'Closed';
+    public const STATUS_PENDING = 'Pending';
+
+    // Location Constants
+    public const LOCATION_ON_SITE = 'on-site';
+    public const LOCATION_REMOTE = 'Remote';
+    public const LOCATION_HYBRID = 'Hybrid';
+
+    protected $fillable = [
+        'job_title',
+        'description',
+        'requirements',
+        'qualifications',
+        'job_location',
+        'job_type',
+        'salary_range_min',
+        'salary_range_max',
+        'currency',
+        'posted_date',
+        'application_deadline',
+        'status',
+        'views_count'
+    ];
+
+    protected $attributes = [
+        'status' => self::STATUS_PENDING,
+    ];
+
+    public static function getJobTypes(): array
+    {
+        return [
+            self::TYPE_FULL_TIME,
+            self::TYPE_PART_TIME,
+            self::TYPE_INTERNSHIP,
+            self::TYPE_FREELANCE,
+        ];
+    }
+
+    public static function getStatuses(): array
+    {
+        return [
+            self::STATUS_OPEN,
+            self::STATUS_CLOSED,
+            self::STATUS_PENDING,
+        ];
+    }
+
+    public static function getLocations(): array
+    {
+        return [
+            self::LOCATION_ON_SITE,
+            self::LOCATION_REMOTE,
+            self::LOCATION_HYBRID,
+        ];
+    }
+}
