@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\employer;
 
+use App\Http\Controllers\Controller;
 use App\Models\Job;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
@@ -9,15 +10,15 @@ use Illuminate\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\Rule;
 
-class JobsController extends Controller
+class JobController extends Controller
 {
     public function __construct()
     {
         $this->middleware('auth')->except([
-            'index',           
-            'show',            
-            'openJobs',        
-            'search'       
+            'index',
+            'show',
+            'openJobs',
+            'search'
         ]);
 
         $this->middleware(['auth', 'role:employer,admin'])->only([
@@ -33,15 +34,15 @@ class JobsController extends Controller
         ]);
     }
 
- 
+
     public function index(Request $request): View|JsonResponse
     {
         $query = Job::query();
 
-       
+
         if (!auth()->check() || auth()->user()->role === 'itian') {
             $query->where('status', Job::STATUS_OPEN)
-                  ->where('application_deadline', '>=', now()); 
+                  ->where('application_deadline', '>=', now());
         }
 
         if (auth()->check() && auth()->user()->role === 'employer') {
@@ -202,7 +203,7 @@ class JobsController extends Controller
         $jobTypes = Job::getJobTypes();
         $statuses = Job::getStatuses();
         $locations = Job::getLocations();
-        
+
         return view('jobs.create', compact('jobTypes', 'statuses', 'locations'));
     }
 
@@ -254,7 +255,7 @@ class JobsController extends Controller
         $jobTypes = Job::getJobTypes();
         $statuses = Job::getStatuses();
         $locations = Job::getLocations();
-        
+
         return view('jobs.edit', compact('job', 'jobTypes', 'statuses', 'locations'));
     }
 
