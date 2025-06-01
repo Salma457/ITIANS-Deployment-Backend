@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
+use App\Models\ItianRegistrationRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,11 +14,20 @@ class AuthController extends Controller
 {
     public function register(RegisterRequest $request)
     {
-        $data = $request->validated();
 
-        $user = User::create($data);
+        $user = User::create($request->all());
 
         $token = $user->createToken('auth_token')->plainTextToken;
+        
+        if ($request->hasFile('certificate')) {
+            $path = $request->file('certificate')->store('certificates', 'public');
+
+            ItianRegistrationRequest::create([
+                'user_id' => $user->id,
+                'certificate' => $path,
+                'status' => 'Pending',
+            ]);
+        }
 
         return response()->json([
             'message' => 'User registered successfully',
