@@ -36,3 +36,6 @@ use Illuminate\Support\Facades\Route;
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     });
+    Broadcast::channel('chat.{userId}', function ($user, $userId) {
+        return (int) $user->id === (int) $userId;
+    });
