@@ -49,10 +49,9 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     public function itianProfile()
 {
     return $this->hasOne(ItianProfile::class, 'user_id');
 }
-    }
-
 }
