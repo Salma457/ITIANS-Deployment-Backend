@@ -5,6 +5,16 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\JobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ItianProfileController;
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/profile', [ItianProfileController::class, 'store']);
+    Route::get('/profile', [ItianProfileController::class, 'show']);
+    Route::put('/profile', [ItianProfileController::class, 'update']);
+    Route::delete('/profile', [ItianProfileController::class, 'destroy']);
+});
+
 
 
     Route::post('register', [AuthController::class, 'register']);
