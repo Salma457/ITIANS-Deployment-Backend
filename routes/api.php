@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\JobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PostController;
 
 
     Route::post('register', [AuthController::class, 'register']);
@@ -39,3 +40,11 @@ use Illuminate\Support\Facades\Route;
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     });
+
+//posts
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('posts', App\Http\Controllers\PostController::class);
+});
+Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+
+
