@@ -21,6 +21,10 @@ class CommentController extends Controller
 
     public function store(Request $request, $postId)
     {
+        if (!Auth::check()) {
+            return response()->json(['message' => 'Unauthorized'], 401);
+        }
+
         $request->validate([
             'content' => 'required|string',
             'parent_comment_id' => 'nullable|exists:comments,id',
@@ -41,11 +45,34 @@ class CommentController extends Controller
         ], 201);
     }
 
-    public function destroy($id)
+    public function update(Request $request, $id)
     {
         $comment = Comment::findOrFail($id);
 
         if ($comment->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'content' => 'required|string',
+        ]);
+
+        $comment->update([
+            'content' => $request->input('content'),
+        ]);
+
+        return response()->json([
+            'message' => 'Comment updated successfully',
+            'comment' => $comment,
+        ]);
+    }
+
+    public function destroy($id)
+    {
+        $comment = Comment::findOrFail($id);
+        $post = $comment->post;
+
+        if ($comment->user_id !== Auth::id() && $post->user_id !== Auth::id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 

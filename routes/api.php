@@ -1,13 +1,13 @@
 <?php
 
+// use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
-use App\Http\Controllers\CommentController;  
-
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController; 
 
 
 
@@ -21,9 +21,10 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
+
 
     Route::get('jobs', [EmployerJobController::class, 'index']);
     Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
@@ -39,11 +40,12 @@ Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logou
 
     });
 
-    // Itian submits request
-    Route::post('/itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
+    Route::middleware('auth:sanctum')->group(function () {
+        // Itian submits request
+        Route::post('/itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
 
-    // Admin reviews request
-    Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
+        // Admin reviews request
+        Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
 
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
@@ -54,5 +56,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('posts', App\Http\Controllers\PostController::class);
 });
 Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+//comments
+// anyone can view comments
+Route::get('posts/{post}/comments', [CommentController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
+    Route::put('comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+});
+
+
 
 
