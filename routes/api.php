@@ -6,6 +6,8 @@ use App\Http\Controllers\Employer\JobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
+use App\Http\Controllers\PostController;
+
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -14,6 +16,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/profile', [ItianProfileController::class, 'update']);
     Route::delete('/profile', [ItianProfileController::class, 'destroy']);
 });
+
 
 
 
@@ -49,3 +52,11 @@ Route::middleware('auth:sanctum')->group(function () {
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     });
+
+//posts
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('posts', App\Http\Controllers\PostController::class);
+});
+Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+
+

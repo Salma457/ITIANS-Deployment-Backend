@@ -9,8 +9,12 @@ class ItianProfile extends Model
 {
     use HasFactory;
 
-    protected $primaryKey = 'itian_profile_id';
+    protected $primaryKey = 'itian_profile_id'; 
     
+    public $incrementing = true;
+    
+    protected $keyType = 'int';  
+
     protected $fillable = [
         'user_id',
         'first_name',
@@ -34,10 +38,10 @@ class ItianProfile extends Model
     {
         return $this->belongsTo(User::class);
     }
-    
-    public function getProfilePictureUrlAttribute()
-{
-    return $this->profile_picture ? asset('storage/' . $this->profile_picture) : null;
-}
 
+  
+    public function getProfilePictureUrlAttribute()
+    {
+        return $this->profile_picture ? asset('storage/' . $this->profile_picture) : null;
+    }
 }

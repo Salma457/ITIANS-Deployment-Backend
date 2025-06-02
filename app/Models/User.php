@@ -9,7 +9,6 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\ItianProfile;
 
-
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
