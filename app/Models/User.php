@@ -48,4 +48,12 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+        public function jobs()
+    {
+        return $this->hasMany(Job::class, 'employer_id');
+    }
+    public function hasRole(string $role): bool
+    {
+        return $this->role === $role; 
+    }
 }

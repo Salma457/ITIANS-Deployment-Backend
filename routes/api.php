@@ -2,7 +2,7 @@
 
 // use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\Employer\JobController;
+use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use Illuminate\Support\Facades\Route;
 
@@ -12,21 +12,18 @@ use Illuminate\Support\Facades\Route;
     Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
 
 
-    Route::get('jobs', [JobController::class, 'index']);
-    Route::get('jobs/{job}', [JobController::class, 'show']);
-    Route::get('jobs-open', [JobController::class, 'openJobs']);
-    Route::get('jobs-search', [JobController::class, 'search']);
-
+    Route::get('jobs', [EmployerJobController::class, 'index']);
+    Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
+    
     Route::middleware(['auth:sanctum'])->group(function () {
-        Route::apiResource('jobs', JobController::class)->except(['index', 'show']);
+        Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
+        
+        Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
+        
+        Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
+        
+        Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
 
-        // Status management
-        Route::patch('jobs/{job}/status', [JobController::class, 'changeStatus']);
-        // Admin-only API routes
-        Route::middleware(['role:admin'])->group(function () {
-            Route::get('jobs-statistics', [JobController::class, 'statistics']);
-            Route::patch('jobs/bulk-status', [JobController::class, 'bulkUpdateStatus']);
-        });
     });
 
     Route::middleware('auth:sanctum')->group(function () {
