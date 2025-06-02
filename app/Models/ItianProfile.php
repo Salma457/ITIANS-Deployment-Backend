@@ -2,16 +2,21 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use App\Models\ItianProfile;
+
 class ItianProfile extends Model
 {
-      protected $primaryKey = 'itian_profile_id'; // اسم العمود الأساسي
+    use HasFactory;
 
-    public $incrementing = true; // إذا كنت تستخدم AUTO_INCREMENT
-    protected $keyType = 'int'; // أو 'string' إذا كان UUID
+    protected $primaryKey = 'itian_profile_id'; 
+    
+    public $incrementing = true;
+    
+    protected $keyType = 'int';  
 
     protected $fillable = [
+        'user_id',
         'first_name',
         'last_name',
         'profile_picture',
@@ -27,11 +32,16 @@ class ItianProfile extends Model
         'current_job_title',
         'current_company',
         'preferred_job_locations',
-        'user_id',
     ];
-    public function user()
-{
-    return $this->belongsTo(User::class);
-}
 
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+  
+    public function getProfilePictureUrlAttribute()
+    {
+        return $this->profile_picture ? asset('storage/' . $this->profile_picture) : null;
+    }
 }

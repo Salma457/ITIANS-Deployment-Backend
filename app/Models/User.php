@@ -51,15 +51,8 @@ class User extends Authenticatable
     }
 
     public function itianProfile()
-    {
-        return $this->hasOne(ItianProfile::class, 'user_id');
-    }
-    public function jobs()
-    {
-        return $this->hasMany(Job::class, 'employer_id');
-    }
-    public function hasRole(string $role): bool
-    {
-        return $this->role === $role;
-    }
+{
+    return $this->hasOne(ItianProfile::class);
+}
+
 }
