@@ -10,9 +10,14 @@ class JobReviewsController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index($jobId)
     {
         //
+        
+        $job = JobReviews::where("job_id", $jobId)
+            ->with("user")
+            ->latest()
+            ->get();
     }
 
     /**

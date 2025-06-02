@@ -11,11 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('job_reviews', function (Blueprint $table) {
+        Schema::create('job_application', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('reviewer_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('job_id')->constrained('jobs')->cascadeOnDelete();
-            $table->text('content');
             $table->timestamps();
         });
     }
@@ -25,6 +22,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('job_reviews');
+        Schema::dropIfExists('job_application');
     }
 };
