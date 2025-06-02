@@ -7,8 +7,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Job;
-use App\Models\User;
-use Illuminate\Support\Facades\Gate;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -35,8 +33,8 @@ class AppServiceProvider extends ServiceProvider
             if ($user->role === 'admin') {
                 return true;
             }
-            
-            return $user->id === $job->employer_id && 
+
+            return $user->id === $job->employer_id &&
                    in_array(request('status'), [Job::STATUS_OPEN, Job::STATUS_CLOSED]);
         });
         Gate::define('delete-job', function (User $user, Job $job) {
