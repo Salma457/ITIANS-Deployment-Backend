@@ -13,6 +13,12 @@ return new class extends Migration
     {
         Schema::create('job_application', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('itian_id')->constrained('itian_profiles')->onDelete('cascade');
+            $table->foreignId('job_id')->constrained('jobs')->onDelete('cascade');
+            $table->timestamp('application_date');
+            $table->text('cover_letter');
+            $table->string('status', 50);
+            $table->string('cv')->nullable();
             $table->timestamps();
         });
     }
