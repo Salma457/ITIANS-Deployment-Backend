@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Job extends Model
 {
@@ -22,8 +23,11 @@ class Job extends Model
     public const LOCATION_REMOTE = 'Remote';
     public const LOCATION_HYBRID = 'Hybrid';
 
+    protected $with = ['employer'];
+
     protected $fillable = [
         'job_title',
+        'employer_id',
         'description',
         'requirements',
         'qualifications',
@@ -35,12 +39,28 @@ class Job extends Model
         'posted_date',
         'application_deadline',
         'status',
-        'views_count'
+        'views_count',
+    ];
+
+    protected $casts = [
+        'posted_date' => 'datetime',
+        'application_deadline' => 'datetime',
+        'status_changed_at' => 'datetime'
     ];
 
     protected $attributes = [
         'status' => self::STATUS_PENDING,
     ];
+
+    public function employer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'employer_id');
+    }
+
+    public function statusChanger(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'status_changed_by');
+    }
 
     public static function getJobTypes(): array
     {
