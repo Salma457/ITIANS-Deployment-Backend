@@ -107,4 +107,19 @@ class EmployerProfileController extends Controller
 
         return response()->json(['message' => 'Employer profile deleted']);
     }
+
+    public function publicShow($userId)
+{
+    $profile = EmployerProfile::where('user_id', $userId)->first();
+
+    if (!$profile) {
+        return response()->json(['message' => 'Profile not found'], 404);
+    }
+
+    $data = $profile->toArray();
+    $data['company_logo_url'] = $profile->company_logo_url;
+
+    return response()->json($data);
+}
+
 }
