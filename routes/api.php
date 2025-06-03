@@ -8,6 +8,7 @@ use App\Http\Controllers\JobApplicationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController; 
 
 
@@ -20,7 +21,22 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
-
+Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
+    Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
+    Route::post('/idInfo', [CustomChatController::class, 'idFetchData']);
+    Route::post('/sendMessage', [CustomChatController::class, 'send']);
+    Route::post('/fetchMessages', [CustomChatController::class, 'fetch']);
+    Route::get('/download/{fileName}', [CustomChatController::class, 'download']);
+    Route::post('/makeSeen', [CustomChatController::class, 'seen']);
+    Route::get('/getContacts', [CustomChatController::class, 'getContacts']);
+    Route::post('/star', [CustomChatController::class, 'favorite']);
+    Route::post('/favorites', [CustomChatController::class, 'getFavorites']);
+    Route::get('/search', [CustomChatController::class, 'search']);
+    Route::post('/shared', [CustomChatController::class, 'sharedPhotos']);
+    Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
+    Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
+    Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
+});
 
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
@@ -51,6 +67,7 @@ Route::middleware('auth:sanctum')->group(function () {
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     });
+
 
 //posts
 Route::middleware('auth:sanctum')->group(function () {
