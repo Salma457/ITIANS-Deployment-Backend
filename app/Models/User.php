@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use App\Models\ItianProfile;
 
 class User extends Authenticatable
 {
@@ -48,12 +49,17 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
-        public function jobs()
+
+    public function itianProfile()
+    {
+        return $this->hasOne(ItianProfile::class, 'user_id');
+    }
+    public function jobs()
     {
         return $this->hasMany(Job::class, 'employer_id');
     }
     public function hasRole(string $role): bool
     {
-        return $this->role === $role; 
+        return $this->role === $role;
     }
 }

@@ -5,7 +5,34 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\ItianProfileController;
+use App\Http\Controllers\PostController;
+use App\Http\Controllers\CustomChatController;
 
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/profile', [ItianProfileController::class, 'store']);
+    Route::get('/profile', [ItianProfileController::class, 'show']);
+    Route::put('/profile', [ItianProfileController::class, 'update']);
+    Route::delete('/profile', [ItianProfileController::class, 'destroy']);
+});
+
+
+Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
+    Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
+    Route::post('/idInfo', [CustomChatController::class, 'idFetchData']);
+    Route::post('/sendMessage', [CustomChatController::class, 'send']);
+    Route::post('/fetchMessages', [CustomChatController::class, 'fetch']);
+    Route::get('/download/{fileName}', [CustomChatController::class, 'download']);
+    Route::post('/makeSeen', [CustomChatController::class, 'seen']);
+    Route::get('/getContacts', [CustomChatController::class, 'getContacts']);
+    Route::post('/star', [CustomChatController::class, 'favorite']);
+    Route::post('/favorites', [CustomChatController::class, 'getFavorites']);
+    Route::get('/search', [CustomChatController::class, 'search']);
+    Route::post('/shared', [CustomChatController::class, 'sharedPhotos']);
+    Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
+    Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
+    Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
+});
 
     Route::post('register', [AuthController::class, 'register']);
     Route::post('login', [AuthController::class, 'login']);
@@ -36,6 +63,12 @@ use Illuminate\Support\Facades\Route;
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     });
-    Broadcast::channel('chat.{userId}', function ($user, $userId) {
-        return (int) $user->id === (int) $userId;
-    });
+
+
+//posts
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('posts', App\Http\Controllers\PostController::class);
+});
+Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+
+

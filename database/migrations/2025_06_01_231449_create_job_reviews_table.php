@@ -13,6 +13,9 @@ return new class extends Migration
     {
         Schema::create('job_reviews', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('reviewer_id')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('job_id')->constrained('jobs')->cascadeOnDelete();
+            $table->text('content');
             $table->timestamps();
         });
     }
