@@ -4,6 +4,7 @@
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
+use App\Http\Controllers\JobApplicationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
@@ -27,14 +28,14 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('jobs', [EmployerJobController::class, 'index']);
     Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
-    
+
     Route::middleware(['auth:sanctum'])->group(function () {
         Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
-        
+
         Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
-        
+
         Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
-        
+
         Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
 
     });
@@ -57,3 +58,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
 
 
+// Job applications
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('job-application', [JobApplicationController::class,'store']);
+});
