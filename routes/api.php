@@ -1,13 +1,13 @@
 <?php
 
-// use App\Http\Controllers\AuthController;
+//use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
-
+use App\Http\Controllers\Api\EmployerProfileController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -17,6 +17,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/profile', [ItianProfileController::class, 'destroy']);
 });
 
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
+    Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
+    Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
+    Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
+});
 
 
 

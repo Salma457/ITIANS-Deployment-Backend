@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use App\Models\ItianProfile;
+use App\Models\EmployerProfile;
 
 class User extends Authenticatable
 {
@@ -62,4 +63,10 @@ class User extends Authenticatable
     {
         return $this->role === $role;
     }
+
+    public function employerProfile()
+{
+    return $this->hasOne(EmployerProfile::class, 'user_id');
+}
+
 }
