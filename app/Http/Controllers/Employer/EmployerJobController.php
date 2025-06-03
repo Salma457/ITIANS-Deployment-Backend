@@ -13,10 +13,37 @@ use Illuminate\Support\Facades\Gate;
 
 class EmployerJobController extends Controller
 {
-    public function index()
-    {
-        return new JobCollection(Job::with(['employer', 'statusChanger'])->paginate(10));
+    public function index(\Illuminate\Http\Request $request)
+{
+    $query = Job::with(['employer', 'statusChanger']);
+
+    if ($request->filled('title')) {
+        $query->where('job_title', 'like', '%' . $request->title . '%');
     }
+
+    if ($request->filled('job_type')) {
+        $query->where('job_type', $request->job_type);
+    }
+
+    if ($request->filled('status')) {
+        $query->where('status', $request->status);
+    }
+
+    if ($request->filled('job_location')) {
+        $query->where('job_location', $request->job_location);
+    }
+
+    if ($request->filled('min_salary')) {
+        $query->where('salary_range_min', '>=', $request->min_salary);
+    }
+
+    if ($request->filled('max_salary')) {
+        $query->where('salary_range_max', '<=', $request->max_salary);
+    }
+
+    return new JobCollection($query->paginate(10));
+}
+
 
     public function store(StoreJobRequest $request)
     {
@@ -70,7 +97,7 @@ class EmployerJobController extends Controller
                 'message' => 'Unauthorized. Admin access required.'
             ], 403);
         }
-    
+
         $stats = [
             'total_jobs' => Job::count(),
             'open_jobs' => Job::where('status', Job::STATUS_OPEN)->count(),
@@ -79,8 +106,8 @@ class EmployerJobController extends Controller
             'jobs_per_type' => Job::groupBy('job_type')->selectRaw('job_type, count(*) as count')->get(),
             'jobs_per_location' => Job::groupBy('job_location')->selectRaw('job_location, count(*) as count')->get(),
         ];
-    
+
         return response()->json($stats);
     }
-    
+
 }
