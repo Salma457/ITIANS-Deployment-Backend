@@ -8,6 +8,7 @@ use App\Http\Controllers\JobApplicationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\CommentController; 
 
 
 
@@ -56,6 +57,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('posts', App\Http\Controllers\PostController::class);
 });
 Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+//comments
+// anyone can view comments
+Route::get('posts/{post}/comments', [CommentController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
+    Route::put('comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+});
+
+
 
 
 // Job applications
