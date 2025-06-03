@@ -61,4 +61,5 @@ Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPo
 // Job applications
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('job-application', [JobApplicationController::class,'store']);
+    Route::get('job-application/{job_id}', [JobApplicationController::class, 'getJobApplications']);
 });
