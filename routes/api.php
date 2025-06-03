@@ -1,6 +1,6 @@
 <?php
 
-// use App\Http\Controllers\AuthController;
+//use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
@@ -8,18 +8,30 @@ use App\Http\Controllers\JobApplicationController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController; 
 
 
 
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/profile', [ItianProfileController::class, 'store']);
-    Route::get('/profile', [ItianProfileController::class, 'show']);
-    Route::put('/profile', [ItianProfileController::class, 'update']);
-    Route::delete('/profile', [ItianProfileController::class, 'destroy']);
+    Route::post('/itian-profile', [ItianProfileController::class, 'store']);
+    Route::get('/itian-profile', [ItianProfileController::class, 'show']);
+    Route::put('/itian-profile', [ItianProfileController::class, 'update']);
+    Route::delete('/itian-profile', [ItianProfileController::class, 'destroy']);
+    Route::get('/itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
+
 });
 
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
+    Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
+    Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
+    Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
+    Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
+
+});
 
 Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
     Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);

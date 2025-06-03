@@ -18,15 +18,23 @@ class JobApplicationController extends Controller
     public function getJobApplications($job_id)
     {
         //
-        $job = Job::findOrFail($job_id);
-        
-   
-        if ($job->employer->user_id !== Auth::id()) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
+        try{
+            $job = Job::findOrFail($job_id);     
+    
+            if ($job->employer->user_id !== Auth::id()) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
 
-        $jobApplications = JobApplication::where("job_id", $job_id)->get();
-        return response()->json(data: $jobApplications);
+            $jobApplications = JobApplication::where("job_id", $job_id)->get();
+            return response()->json(data: $jobApplications);
+            
+        }catch(\Exception $e){
+            return response()->json([
+                'success' => false,
+                'message' => 'Something went wrong.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     public function store(Request $request)

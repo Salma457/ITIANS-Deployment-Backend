@@ -115,4 +115,19 @@ class ItianProfileController extends Controller
 
         return response()->json(['message' => 'Profile deleted']);
     }
+
+    public function publicShow($userId)
+{
+    $profile = ItianProfile::where('user_id', $userId)->first();
+
+    if (!$profile) {
+        return response()->json(['message' => 'Profile not found'], 404);
+    }
+
+    $data = $profile->toArray();
+    $data['cv_url'] = $profile->cv ? asset('storage/' . $profile->cv) : null;
+
+    return response()->json($data);
+}
+
 }
