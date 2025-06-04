@@ -12,7 +12,6 @@ class JobApplication extends Model
         'cv',
         'itian_id',
         'cover_letter',
-        'application_date',
         'status',
         'job_id'
     ];
@@ -25,6 +24,9 @@ class JobApplication extends Model
     }
     function itian(){
         return $this->belongsTo(ItianProfile::class, 'itian_id','itian_profile_id');
+    }
+    function employer(){
+        return $this->belongsTo(EmployerProfile::class,'employer_id','employer_profile_id');
     }
 
 }

@@ -102,5 +102,11 @@ Route::middleware('auth:sanctum')->group(function () {
 // Job applications
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('job-application', [JobApplicationController::class,'store']);
+    Route::get('job-application/{id}', [JobApplicationController::class,'show']);
     Route::get('job-application/{job_id}', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('/employer/job-application/', [JobApplicationController::class, 'getEmployerAllJobApplications']);
+    Route::get('/itian/job-application/', [JobApplicationController::class, 'index']);
+    Route::put('job-application/{id}', [JobApplicationController::class, 'updateStatus']);
+    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
+
 });
