@@ -9,6 +9,27 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Api\EmployerProfileController;
+use App\Http\Controllers\Api\ItianSkillProjectController;
+
+
+Route::middleware('auth:sanctum')->group(function () {
+
+    // Skills
+    Route::post('/skills', [ItianSkillProjectController::class, 'storeSkill']);
+    Route::put('/skills/{id}', [ItianSkillProjectController::class, 'updateSkill']);
+    Route::delete('/skills/{id}', [ItianSkillProjectController::class, 'deleteSkill']);
+    
+    Route::get('/skills', [ItianSkillProjectController::class, 'listSkills']);
+    Route::get('/skills/profile/{itian_profile_id}', [ItianSkillProjectController::class, 'showSkillsByProfile']);
+
+    // Projects
+    Route::post('/projects', [ItianSkillProjectController::class, 'storeProject']);
+    Route::put('/projects/{id}', [ItianSkillProjectController::class, 'updateProject']);
+    Route::delete('/projects/{id}', [ItianSkillProjectController::class, 'deleteProject']);
+    Route::get('/projects', [ItianSkillProjectController::class, 'listProjects']);
+    Route::get('/projects/profile/{itian_profile_id}', [ItianSkillProjectController::class, 'showProjectsByProfile']);
+
+});
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController; 
 
