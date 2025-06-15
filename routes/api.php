@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
+use App\Http\Controllers\ReportController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -130,4 +131,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('job-application/{id}', [JobApplicationController::class, 'updateStatus']);
     Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
 
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::post('/reports', [ReportController::class, 'store']);
+    Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
+
+    Route::put('/reports/{id}/status', [ReportController::class, 'updateStatus']);
 });
