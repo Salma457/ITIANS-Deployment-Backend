@@ -15,7 +15,7 @@ class RegisterRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:admin,itian,employer',
+            'role' => 'required|in:itian,employer',
             'certificate' => [
                 // required if role is itian
                 Rule::requiredIf($this->input('role') === 'itian'),

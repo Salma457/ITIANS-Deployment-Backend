@@ -18,7 +18,6 @@ class AuthController extends Controller
         $user = User::create($request->all());
 
         $token = $user->createToken('auth_token')->plainTextToken;
-        
         if ($request->hasFile('certificate')) {
             $path = $request->file('certificate')->store('certificates', 'public');
 
@@ -47,8 +46,10 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        if (!$user->is_active) {
-            return response()->json(['message' => 'User account is not active'], 403);
+        if ($user->role != 'admin') {
+            if (!$user->is_active) {
+                return response()->json(['message' => 'User account is not active'], 403);
+            }
         }
 
         $token = $user->createToken('auth_token')->plainTextToken;

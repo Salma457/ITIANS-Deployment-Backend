@@ -3,16 +3,19 @@
 namespace App\Http\Controllers\Itian;
 
 use App\Http\Requests\ItianRegistrationRequestRequest;
+use App\Mail\RegistrationRequestReviewed;
 use App\Models\ItianRegistrationRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Mail;
 
 class ItianRegistrationRequestController extends Controller
 {
 
     public function index()
     {
+        //
         return ItianRegistrationRequest::with('user')->get();
     }
 
@@ -39,6 +42,7 @@ class ItianRegistrationRequestController extends Controller
 
     public function review(Request $request, $id)
     {
+
         $request->validate([
             'status' => 'required|in:Approved,Rejected',
         ]);
@@ -48,13 +52,23 @@ class ItianRegistrationRequestController extends Controller
         $regRequest->reviewed_by_admin_id = Auth::id();
         $regRequest->save();
 
+        // If rejected, delete the user
+        if ($request->status === 'Rejected' && $regRequest->user) {
+            $regRequest->user->delete();
+        }
+
+        Mail::to($regRequest->user->email)->send(new RegistrationRequestReviewed($regRequest));
+
         return response()->json(['message' => 'Request updated.', 'request' => $regRequest]);
     }
 
-    public function show(ItianRegistrationRequest $itianRegistrationRequest)
+    public function show(Request $request, $id)
     {
-        //
+        $regRequest = ItianRegistrationRequest::with('user')->findOrFail($id);
+        return response()->json($regRequest);
     }
+
+
 
     public function update(Request $request, ItianRegistrationRequestRequest $itianRegistrationRequest)
     {
