@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
+use App\Http\Controllers\RAGController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
@@ -18,7 +19,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/skills', [ItianSkillProjectController::class, 'storeSkill']);
     Route::put('/skills/{id}', [ItianSkillProjectController::class, 'updateSkill']);
     Route::delete('/skills/{id}', [ItianSkillProjectController::class, 'deleteSkill']);
-    
+
     Route::get('/skills', [ItianSkillProjectController::class, 'listSkills']);
     Route::get('/skills/profile/{itian_profile_id}', [ItianSkillProjectController::class, 'showSkillsByProfile']);
 
@@ -31,7 +32,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 use App\Http\Controllers\CustomChatController;
-use App\Http\Controllers\CommentController; 
+use App\Http\Controllers\CommentController;
 
 
 
@@ -131,3 +132,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
 
 });
+Route::post('/ask-rag', [RAGController::class, 'askRAG']);

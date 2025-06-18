@@ -13,7 +13,15 @@ return [
     | a conventional file to locate the various service credentials.
     |
     */
-
+'openai' => [
+    'api_key' => env('OPENAI_API_KEY'),
+    'model' => env('OPENAI_MODEL', 'o1-mini'),
+],
+'supabase' => [
+    'url' => env('SUPABASE_URL'),
+    'key' => env('SUPABASE_API_KEY'),
+    'table' => env('SUPABASE_TABLE', 'jobs'),
+],
     'postmark' => [
         'token' => env('POSTMARK_TOKEN'),
     ],
