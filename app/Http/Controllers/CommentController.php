@@ -39,10 +39,11 @@ class CommentController extends Controller
             'parent_comment_id' => $request->input('parent_comment_id'),
         ]);
 
-        return response()->json([
-            'message' => 'Comment created successfully',
-            'comment' => $comment,
-        ], 201);
+       return response()->json([
+    'message' => 'Comment created successfully',
+    'comment' => $comment->load('user', 'replies'),
+], 201);
+
     }
 
     public function update(Request $request, $id)
