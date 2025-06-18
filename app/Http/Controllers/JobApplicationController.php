@@ -15,28 +15,28 @@ class JobApplicationController extends Controller
 {
 
     // display all applicants for a job (employer)
-    public function getJobApplications($job_id)
-    {
-        try{
-            $job = Job::findOrFail($job_id);     
-            // return $job;
+   public function getJobApplications($job_id)
+{
+    try {
+        $job = Job::findOrFail($job_id);     
 
-            if ($job->employer->id !== Auth::id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
-            $jobApplications = JobApplication::where("job_id", $job_id)->get();
-
-            return response()->json(data: $jobApplications);
-            
-        }catch(\Exception $e){
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage()
-            ], 500);
+        if (!$job->employer || $job->employer->id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
+
+        $jobApplications = JobApplication::where("job_id", $job_id)->get();
+
+        return response()->json(['data' => $jobApplications]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
 
     // Itian send application 

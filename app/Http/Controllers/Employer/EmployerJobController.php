@@ -10,7 +10,8 @@ use App\Http\Resources\JobCollection;
 use App\Models\Job;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Gate;
-
+use Carbon\Carbon;
+use Illuminate\Http\Request;
 class EmployerJobController extends Controller
 {
     public function index(\Illuminate\Http\Request $request)
@@ -44,7 +45,12 @@ class EmployerJobController extends Controller
     return new JobCollection($query->paginate(10));
 }
 
-
+  public function employerJobs(Request $request)
+    {
+        $user = $request->user();
+        $jobs = Job::withTrashed()->where('employer_id', $user->id)->get();
+        return response()->json($jobs);
+    }
     public function store(StoreJobRequest $request)
     {
         $job = Job::create($request->validated() + [
@@ -70,44 +76,33 @@ class EmployerJobController extends Controller
 
     public function destroy(Job $job)
     {
-        $job->delete();
-        return response()->json(null, 204);
+        $job->delete(); // Soft delete
+        return response()->json(['message' => 'Job moved to trash.']);
     }
 
-    public function updateStatus(UpdateJobStatusRequest $request, Job $job)
+    public function trashed()
     {
-        $job->update([
-            'status' => $request->status,
-        ]);
-
-        return new JobResource($job->load(['employer', 'statusChanger']));
-    }
-
-    public function employerJobs()
-    {
-        $jobs = auth()->user()->jobs()->with(['employer', 'statusChanger'])->get();
+        $user = auth()->user();
+        $jobs = Job::onlyTrashed()
+            ->where('employer_id', $user->id)
+            ->with(['employer', 'statusChanger'])
+            ->get();
         return JobResource::collection($jobs);
     }
 
-    public function statistics(): JsonResponse
+    // Restore a trashed job
+    public function restore($id)
     {
-        // Check if user is authenticated and has admin role
-        if (!auth()->check() || !auth()->user()->hasRole('admin')) {
-            return response()->json([
-                'message' => 'Unauthorized. Admin access required.'
-            ], 403);
-        }
-
-        $stats = [
-            'total_jobs' => Job::count(),
-            'open_jobs' => Job::where('status', Job::STATUS_OPEN)->count(),
-            'pending_jobs' => Job::where('status', Job::STATUS_PENDING)->count(),
-            'closed_jobs' => Job::where('status', Job::STATUS_CLOSED)->count(),
-            'jobs_per_type' => Job::groupBy('job_type')->selectRaw('job_type, count(*) as count')->get(),
-            'jobs_per_location' => Job::groupBy('job_location')->selectRaw('job_location, count(*) as count')->get(),
-        ];
-
-        return response()->json($stats);
+        $job = Job::onlyTrashed()->where('id', $id)->where('employer_id', auth()->id())->firstOrFail();
+        $job->restore();
+        return response()->json(['message' => 'Job restored successfully.']);
     }
 
+    // Permanently delete a trashed job
+    public function forceDelete($id)
+    {
+        $job = Job::onlyTrashed()->where('id', $id)->where('employer_id', auth()->id())->firstOrFail();
+        $job->forceDelete();
+        return response()->json(['message' => 'Job permanently deleted.']);
+    }
 }

@@ -88,9 +88,10 @@ Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
         Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
 
         Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
-
+        Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);
+        Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
+        Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
     });
-
     Route::middleware('auth:sanctum')->group(function () {
         // Itian submits request
         Route::post('/itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
@@ -125,7 +126,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('job-application', [JobApplicationController::class,'store']);
     Route::get('job-application/{id}', [JobApplicationController::class,'show']);
-    Route::get('job-application/{job_id}', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('job/{job_id}/applications', [JobApplicationController::class, 'getJobApplications']);
     Route::get('/employer/job-application/', [JobApplicationController::class, 'getEmployerAllJobApplications']);
     Route::get('/itian/job-application/', [JobApplicationController::class, 'index']);
     Route::put('job-application/{id}', [JobApplicationController::class, 'updateStatus']);
@@ -138,3 +139,4 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
 // Handle reset request
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
+
