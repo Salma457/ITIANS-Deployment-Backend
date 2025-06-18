@@ -10,10 +10,18 @@ use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
-use App\Http\Controllers\RAGController;
+use App\Http\Controllers\PostReactionController;
+use App\Http\Controllers\Auth\PasswordResetController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/posts/{post}/react', [PostReactionController::class, 'react']);
+    Route::delete('/posts/{post}/reaction', [PostReactionController::class, 'removeReaction']);
+    Route::get('/posts/{post}/reactions', [PostReactionController::class, 'getReactions']);
+});
+
 
     // Skills
     Route::post('/skills', [ItianSkillProjectController::class, 'storeSkill']);
@@ -96,14 +104,14 @@ Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
         Route::post('/itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
 
         // Admin reviews request
-        Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
+        Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review'])->middleware(('admin'));
 
+        // admin views request
+        Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     });
 
-
-//posts
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('posts', App\Http\Controllers\PostController::class);
 });
@@ -132,4 +140,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
 
 });
-Route::post('/ask-rag', [RAGController::class, 'askRAG']);
+
+// password reset routes
+// Send reset link
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
+// Handle reset request
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
