@@ -11,31 +11,22 @@ class PostController extends Controller
 {
     // ✅ عرض كل البوستات
     public function index()
-    {
-        $posts = Post::with('itian')->latest()->get();
-        return response()->json($posts);
-    }
-public function myPosts()
 {
-    $user = auth()->user();
-
-    if (!$user) {
-        return response()->json(['message' => 'Unauthorized'], 401);
-    }
-
-    $itianProfile = $user->itianProfile;
-
-    if (!$itianProfile) {
-        return response()->json(['message' => 'User has no ITI profile.'], 403);
-    }
+    $userId = auth()->id();
 
     $posts = Post::with('itian')
-        ->where('itian_id', $itianProfile->itian_profile_id)
+        ->withCount('reactions')
         ->latest()
-        ->get();
+        ->get()
+        ->map(function ($post) use ($userId) {
+            $post->user_reaction = $post->reactions->firstWhere('user_id', $userId)?->reaction_type;
+            $post->reactions = $post->reactions->groupBy('reaction_type')->map->count();
+            return $post;
+        });
 
     return response()->json($posts);
 }
+
 
 
     // ✅ إنشاء بوست جديد
