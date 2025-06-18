@@ -17,4 +17,10 @@ class Post extends Model
     {
         return $this->belongsTo(ItianProfile::class, 'itian_id', 'itian_profile_id');
     }
+
+    public function reactions()
+{
+    return $this->hasMany(PostReaction::class);
+}
+
 }

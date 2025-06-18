@@ -10,10 +10,18 @@ use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
 use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
+use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\Auth\PasswordResetController;
 
 
 Route::middleware('auth:sanctum')->group(function () {
+
+    Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/posts/{post}/react', [PostReactionController::class, 'react']);
+    Route::delete('/posts/{post}/reaction', [PostReactionController::class, 'removeReaction']);
+    Route::get('/posts/{post}/reactions', [PostReactionController::class, 'getReactions']);
+});
+
 
     // Skills
     Route::post('/skills', [ItianSkillProjectController::class, 'storeSkill']);
