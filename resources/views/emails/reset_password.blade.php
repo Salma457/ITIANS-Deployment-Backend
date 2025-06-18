@@ -72,7 +72,7 @@
         <p>Please click the button below to reset your password:</p>
 
         <p style="text-align: center; color: white;">
-            <a href="{{ url('/api/reset-password?token=' . $token . '&email=' . $email) }}" class="action-button" class="action-button" style="text-decoration: none; color:white;">
+            <a href="http://localhost:5173/reset-password?token={{ $token }}&email={{ $email }}" class="action-button">
                 Reset Password
             </a>
         </p>
