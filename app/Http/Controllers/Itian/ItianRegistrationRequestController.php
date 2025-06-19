@@ -58,7 +58,9 @@ class ItianRegistrationRequestController extends Controller
         }
 
         Mail::to($regRequest->user->email)->send(new RegistrationRequestReviewed($regRequest));
-
+        if ($request->status === 'Approved') {
+            $regRequest->delete();
+        }
         return response()->json(['message' => 'Request updated.', 'request' => $regRequest]);
     }
 
