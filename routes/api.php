@@ -130,16 +130,28 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
-// Job applications
 Route::middleware('auth:sanctum')->group(function () {
-    Route::post('job-application', [JobApplicationController::class,'store']);
-    Route::get('job-application/{id}', [JobApplicationController::class,'show']);
-    Route::get('job/{job_id}/applications', [JobApplicationController::class, 'getJobApplications']);
-    Route::get('/employer/job-application/', [JobApplicationController::class, 'getEmployerAllJobApplications']);
-    Route::get('/itian/job-application/', [JobApplicationController::class, 'index']);
-    Route::put('job-application/{id}', [JobApplicationController::class, 'updateStatus']);
-    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
+    // Create
+    Route::post('job-application', [JobApplicationController::class, 'store']);
 
+    // Read
+    Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
+    Route::get('job-application/job/{job_id}', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
+    Route::get('itian/job-application', [JobApplicationController::class, 'index']);
+    Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
+
+    // Update
+   // تحديث شامل باستخدام PUT
+Route::put('job-application/{id}', [JobApplicationController::class, 'update']);
+Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
+
+// لو حابة تخلي status بس ليه route منفصل (optional)
+Route::patch('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
+
+
+    // Delete
+    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
 });
 
 // password reset routes

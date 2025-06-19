@@ -105,4 +105,24 @@ class EmployerJobController extends Controller
         $job->forceDelete();
         return response()->json(['message' => 'Job permanently deleted.']);
     }
+
+    public function updateStatus(UpdateJobStatusRequest $request, Job $job)
+    {
+        if (Gate::denies('update-job-status', $job)) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $job->update([
+            'status' => $request->status,
+            'status_changed_by' => auth()->id(),
+            'status_changed_at' => Carbon::now(),
+        ]);
+
+        return new JobResource($job->fresh()->load(['employer', 'statusChanger']));
+    }
+    public function getJobById($id)
+    {
+        $job = Job::with(['employer', 'statusChanger'])->findOrFail($id);
+        return new JobResource($job);
+    }
 }
