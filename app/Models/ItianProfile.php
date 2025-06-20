@@ -34,10 +34,12 @@ class ItianProfile extends Model
         'preferred_job_locations',
     ];
 
-    public function user()
-    {
-        return $this->belongsTo(User::class);
-    }
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
+
 
 
     public function getProfilePictureUrlAttribute()

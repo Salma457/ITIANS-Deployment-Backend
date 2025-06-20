@@ -11,6 +11,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ApprovedForInterviewMail;
+use Illuminate\Support\Facades\Mail;
 
 class JobApplicationController extends Controller
 {
@@ -25,7 +27,7 @@ class JobApplicationController extends Controller
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
-        $jobApplications = JobApplication::where("job_id", $job_id)->get();
+$jobApplications = JobApplication::with('itian')->where("job_id", $job_id)->get();
 
         return response()->json(['data' => $jobApplications]);
 
@@ -177,30 +179,43 @@ public function store(Request $request)
 
 
 
-    // update job application status. employer sends status of job application.
-    public function updateStatus(UpdateJobApplicationRequest $request, $id)
-    {
+public function updateStatus(Request $request, $id)
+{
+    try {
+        $request->validate([
+            'status' => 'required|in:approved,rejected,pending',
+        ]);
 
-        try {
-            $application = JobApplication::findOrFail($id);
-            $job = $application->job;
+        $application = JobApplication::with('itian.user', 'job')->findOrFail($id);
+        $application->status = $request->status;
+        $application->save();
 
-            if ($job->employer->id !== Auth::id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
+        if ($request->status === 'approved') {
+            $email = $application->itian->user->email ?? null;
+            if ($email) {
+                try {
+                    Mail::to($email)->send(new ApprovedForInterviewMail($application));
+                } catch (\Exception $e) {
+                    \Log::error('Mail send failed: ' . $e->getMessage());
+                }
             }
-
-            $application->status = $request->status;
-            $application->save();
-
-            return response()->json(['message' => 'Status updated.', 'data' => $application]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage()
-            ], 500);
         }
+
+        return response()->json(['message' => 'Application status updated successfully.']);
+    } catch (\Exception $e) {
+        \Log::error('updateStatus error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Internal server error.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+
+
+
+
 
     // job applicant deletes job application
     public function destroy($id)
