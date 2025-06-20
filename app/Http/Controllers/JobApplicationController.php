@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
 use App\Mail\ApprovedForInterviewMail;
 use Illuminate\Support\Facades\Mail;
+use App\Mail\RegistrationRequestRejected;
 
 class JobApplicationController extends Controller
 {
@@ -190,16 +191,21 @@ public function updateStatus(Request $request, $id)
         $application->status = $request->status;
         $application->save();
 
-        if ($request->status === 'approved') {
-            $email = $application->itian->user->email ?? null;
-            if ($email) {
-                try {
-                    Mail::to($email)->send(new ApprovedForInterviewMail($application));
-                } catch (\Exception $e) {
-                    \Log::error('Mail send failed: ' . $e->getMessage());
-                }
+     if (in_array($request->status, ['approved', 'rejected'])) {
+    $email = $application->itian->user->email ?? null;
+    if ($email) {
+        try {
+            if ($request->status === 'approved') {
+                Mail::to($email)->send(new ApprovedForInterviewMail($application));
+            } elseif ($request->status === 'rejected') {
+                Mail::to($email)->send(new RegistrationRequestRejected($application));
             }
+        } catch (\Exception $e) {
+            \Log::error('Mail send failed: ' . $e->getMessage());
         }
+    }
+}
+
 
         return response()->json(['message' => 'Application status updated successfully.']);
     } catch (\Exception $e) {
