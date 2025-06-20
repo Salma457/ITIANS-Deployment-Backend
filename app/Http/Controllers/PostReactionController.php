@@ -63,4 +63,23 @@ class PostReactionController extends Controller
             'user_reaction' => $post->reactions->firstWhere('user_id', Auth::id())?->reaction_type
         ]);
     }
+    // PostReactionController.php
+public function getReactionDetails($postId)
+{
+    $reactions = PostReaction::with('user')
+        ->where('post_id', $postId)
+        ->get()
+        ->groupBy('reaction_type')
+        ->map(function ($reactions) {
+            return $reactions->map(function ($reaction) {
+                return [
+                    'id' => $reaction->user->id,
+                    'name' => $reaction->user->name,
+                    'avatar' => $reaction->user->profile_picture_url
+                ];
+            });
+        });
+
+    return response()->json($reactions);
+}
 }
