@@ -164,6 +164,7 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 // Admin routes
 Route::middleware('auth:sanctum', 'admin')->group(function () {
     Route::get('/users', [UserManagementController::class, 'allUsers']);
+    Route::get('/users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
     // Route::get('/users/{id}', [UserManagementController::class, 'getUserById']);
     // Route::put('/users/{id}', [UserManagementController::class, 'updateUser']);
     // Route::delete('/users/{id}', [UserManagementController::class, 'deleteUser']);
