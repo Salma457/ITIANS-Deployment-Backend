@@ -9,12 +9,42 @@ use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
-    // ✅ عرض كل البوستات
-    public function index()
-    {
-        $posts = Post::with('itian')->latest()->get();
-        return response()->json($posts);
-    }
+  public function index()
+{
+    $userId = auth()->id();
+
+    $paginated = Post::with(['itian', 'reactions'])->latest()->paginate(10);
+
+    $posts = $paginated->getCollection()->map(function ($post) use ($userId) {
+        return [
+            'id' => $post->id,
+            'title' => $post->title,
+            'content' => $post->content,
+            'image' => $post->image,
+            'created_at' => $post->created_at,
+            'itian' => [
+                'id' => $post->itian->id ?? null,
+                'first_name' => $post->itian->first_name ?? '',
+                'last_name' => $post->itian->last_name ?? '',
+                'profile_picture' => $post->itian->profile_picture ?? null,
+                'user_id' => $post->itian->user_id ?? null,
+            ],
+            'user_reaction' => $post->reactions->firstWhere('user_id', $userId)?->reaction_type,
+            'reactions' => $post->reactions
+                ->groupBy('reaction_type')
+                ->map(fn($group) => $group->count()),
+        ];
+    });
+
+    return response()->json([
+        'data' => $posts,
+        'current_page' => $paginated->currentPage(),
+        'last_page' => $paginated->lastPage(),
+        'total' => $paginated->total(),
+    ]);
+}
+
+
 public function myPosts()
 {
     $user = auth()->user();
@@ -29,22 +59,34 @@ public function myPosts()
         return response()->json(['message' => 'User has no ITI profile.'], 403);
     }
 
-    $posts = Post::with('itian')
-        ->where('itian_id', $itianProfile->itian_profile_id)
-        ->latest()
-        ->get();
+    $paginated = Post::with('itian')
+    ->where('itian_id', $itianProfile->itian_profile_id)
+    ->latest()
+    ->paginate(10);
 
-    return response()->json($posts);
+return response()->json([
+    'data' => $paginated->items(),
+    'current_page' => $paginated->currentPage(),
+    'last_page' => $paginated->lastPage(),
+    'total' => $paginated->total(),
+]);
+
 }
 
 
-    // ✅ إنشاء بوست جديد
-    public function store(Request $request)
+   public function store(Request $request)
 {
-    $request->validate([
-        'title' => 'required|string|max:255',
+    $data = $request->validate([
+        'title' => 'required|string',
         'content' => 'required|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+
     ]);
+
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('posts', 'public');
+        $data['image'] = $imagePath;
+    }
 
     $user = Auth::user();
     $itianProfile = $user->itianProfile;
@@ -54,45 +96,45 @@ public function myPosts()
     }
 
     $post = Post::create([
-        'itian_id' => $itianProfile->itian_profile_id,
-        'title' => $request->title,
-        'content' => $request->content,
-    ]);
+    'itian_id' => $itianProfile->itian_profile_id,
+    'title' => $data['title'],
+    'content' => $data['content'],
+    'image' => $data['image'] ?? null,
 
-    // تحميل بيانات البروفايل المرتبطة
+]);
+
+
     $post->load('itian');
 
     return response()->json([
         'message' => 'Post created successfully',
-        'data' => [
-            'id' => $post->id,
-            'title' => $post->title,
-            'content' => $post->content,
-            'created_at' => $post->created_at,
-            'updated_at' => $post->updated_at,
-            'itian_profile' => $post->itian, // هنا كل بيانات البروفايل
-            'image' => $request->image,
-    'tags' => $request->tags,
-    'visibility' => $request->visibility ?? 'public',
-        ]
+        'data' => $post
     ], 201);
 }
 
 
-    // ✅ عرض بوست معين
+
     public function show($id)
     {
         $post = Post::with('itian')->findOrFail($id);
         return response()->json($post);
     }
 
-    // ✅ تحديث بوست
-    public function update(Request $request, $id)
-    {
-        $post = Post::findOrFail($id);
-        $user = Auth::user();
+    public function update(Request $request, Post $post)
+{
+    $data = $request->validate([
+        'title' => 'sometimes|required|string',
+        'content' => 'sometimes|required|string',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    ]);
 
-        // السماح بالتحديث فقط لصاحب البروفايل
+    if ($request->hasFile('image')) {
+        $imagePath = $request->file('image')->store('posts', 'public');
+        $data['image'] = $imagePath;
+    }
+
+    $user = Auth::user();
+
         if ($post->itian->user_id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -102,12 +144,11 @@ public function myPosts()
             'content' => 'sometimes|required|string',
         ]);
 
-        $post->update($request->only('title', 'content'));
+        $post->update($data);
 
         return response()->json($post);
     }
 
-    // ✅ حذف بوست
     public function destroy($id)
     {
         $post = Post::findOrFail($id);
