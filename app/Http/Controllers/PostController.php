@@ -9,14 +9,13 @@ use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
-    // ✅ عرض كل البوستات
-   public function index()
+  public function index()
 {
     $userId = auth()->id();
 
-    $posts = Post::with(['itian', 'reactions'])->latest()->get();
+    $paginated = Post::with(['itian', 'reactions'])->latest()->paginate(10);
 
-    $posts = $posts->map(function ($post) use ($userId) {
+    $posts = $paginated->getCollection()->map(function ($post) use ($userId) {
         return [
             'id' => $post->id,
             'title' => $post->title,
@@ -24,11 +23,11 @@ class PostController extends Controller
             'image' => $post->image,
             'created_at' => $post->created_at,
             'itian' => [
-                'id' => $post->itian->id,
-                'first_name' => $post->itian->first_name,
-                'last_name' => $post->itian->last_name,
-                'profile_picture' => $post->itian->profile_picture,
-                'user_id' => $post->itian->user_id,
+                'id' => $post->itian->id ?? null,
+                'first_name' => $post->itian->first_name ?? '',
+                'last_name' => $post->itian->last_name ?? '',
+                'profile_picture' => $post->itian->profile_picture ?? null,
+                'user_id' => $post->itian->user_id ?? null,
             ],
             'user_reaction' => $post->reactions->firstWhere('user_id', $userId)?->reaction_type,
             'reactions' => $post->reactions
@@ -37,8 +36,14 @@ class PostController extends Controller
         ];
     });
 
-    return response()->json($posts);
+    return response()->json([
+        'data' => $posts,
+        'current_page' => $paginated->currentPage(),
+        'last_page' => $paginated->lastPage(),
+        'total' => $paginated->total(),
+    ]);
 }
+
 
 public function myPosts()
 {
@@ -54,16 +59,21 @@ public function myPosts()
         return response()->json(['message' => 'User has no ITI profile.'], 403);
     }
 
-    $posts = Post::with('itian')
-        ->where('itian_id', $itianProfile->itian_profile_id)
-        ->latest()
-        ->get();
+    $paginated = Post::with('itian')
+    ->where('itian_id', $itianProfile->itian_profile_id)
+    ->latest()
+    ->paginate(10);
 
-    return response()->json($posts);
+return response()->json([
+    'data' => $paginated->items(),
+    'current_page' => $paginated->currentPage(),
+    'last_page' => $paginated->lastPage(),
+    'total' => $paginated->total(),
+]);
+
 }
 
 
-    // ✅ إنشاء بوست جديد
    public function store(Request $request)
 {
     $data = $request->validate([
@@ -85,7 +95,6 @@ public function myPosts()
         return response()->json(['error' => 'User has no ITI profile.'], 403);
     }
 
-    // ضيفي باقي البيانات داخل الـ create
     $post = Post::create([
     'itian_id' => $itianProfile->itian_profile_id,
     'title' => $data['title'],
@@ -105,14 +114,12 @@ public function myPosts()
 
 
 
-    // ✅ عرض بوست معين
     public function show($id)
     {
         $post = Post::with('itian')->findOrFail($id);
         return response()->json($post);
     }
 
-    // ✅ تحديث بوست
     public function update(Request $request, Post $post)
 {
     $data = $request->validate([
@@ -128,7 +135,6 @@ public function myPosts()
 
     $user = Auth::user();
 
-        // السماح بالتحديث فقط لصاحب البروفايل
         if ($post->itian->user_id !== $user->id) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
@@ -143,7 +149,6 @@ public function myPosts()
         return response()->json($post);
     }
 
-    // ✅ حذف بوست
     public function destroy($id)
     {
         $post = Post::findOrFail($id);
