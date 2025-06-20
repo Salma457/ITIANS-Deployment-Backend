@@ -117,14 +117,19 @@
     });
     Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
     //comments
-    // anyone can view comments
-    Route::get('posts/{post}/comments', [CommentController::class, 'index']);
+   Route::middleware('auth:sanctum')->group(function () {
 
-    Route::middleware('auth:sanctum')->group(function () {
-        Route::post('posts/{post}/comments', [CommentController::class, 'store']);
-        Route::put('comments/{comment}', [CommentController::class, 'update']);
-        Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
-    });
+    // comments
+    Route::get('/posts/{postId}/comments', [CommentController::class, 'index']);
+    Route::post('/posts/{postId}/comments', [CommentController::class, 'store']);
+    Route::put('/comments/{id}', [CommentController::class, 'update']);
+    Route::delete('/comments/{id}', [CommentController::class, 'destroy']);
+
+    // Optional routes for replies
+    Route::put('/replies/{id}', [CommentController::class, 'updateReply']);
+    Route::delete('/replies/{id}', [CommentController::class, 'destroyReply']);
+
+});
 
 
 
