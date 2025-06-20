@@ -5,6 +5,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
 use App\Http\Controllers\JobApplicationController;
+use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
@@ -160,3 +161,12 @@ Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkE
 // Handle reset request
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 
+// Admin routes
+Route::middleware('auth:sanctum', 'admin')->group(function () {
+    Route::get('/users', [UserManagementController::class, 'allUsers']);
+    // Route::get('/users/{id}', [UserManagementController::class, 'getUserById']);
+    // Route::put('/users/{id}', [UserManagementController::class, 'updateUser']);
+    // Route::delete('/users/{id}', [UserManagementController::class, 'deleteUser']);
+    // Route::get('/users/search', [UserManagementController::class, 'searchUsers']);
+    // Route::get('/users/roles', [UserManagementController::class, 'getUserRoles']);
+});
