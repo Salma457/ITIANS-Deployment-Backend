@@ -137,7 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Read
     Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
-    Route::get('job-application/job/{job_id}', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('job/{job}/applications', [JobApplicationController::class, 'getJobApplications']);
     Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
     Route::get('itian/job-application', [JobApplicationController::class, 'index']);
     Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
@@ -148,7 +148,7 @@ Route::put('job-application/{id}', [JobApplicationController::class, 'update']);
 Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
 
 // لو حابة تخلي status بس ليه route منفصل (optional)
-Route::patch('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
+Route::put('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
 
 
     // Delete
