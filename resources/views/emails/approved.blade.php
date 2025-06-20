@@ -91,6 +91,9 @@
             font-weight: 700;
             font-size: 1.5rem;
             color: white;
+            text-align: center;
+                margin: auto;
+
             letter-spacing: 2px;
         }
         
@@ -190,7 +193,7 @@
         .btn {
             display: inline-block;
             background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
-            color: white;
+            color: white !important;
             padding: 1rem 2rem;
             border-radius: 12px;
             text-decoration: none;
@@ -256,7 +259,7 @@
         <div class="header">
             <div class="logo">
                 <div class="logo-placeholder">
-                    <span class="logo-text text-center">ITI</span>
+                    <span class="logo-text ">ITI</span>
                 </div>
             </div>
             <h1>Application Status Update</h1>
