@@ -14,6 +14,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 class EmployerJobController extends Controller
 {
+    
     public function index(\Illuminate\Http\Request $request)
 {
     $query = Job::with(['employer', 'statusChanger']);
