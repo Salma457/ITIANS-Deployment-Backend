@@ -66,9 +66,9 @@ class User extends Authenticatable
     }
 
     public function employerProfile()
-{
-    return $this->hasOne(EmployerProfile::class, 'user_id');
-}
+    {
+        return $this->hasOne(EmployerProfile::class, 'user_id');
+    }
     public function sendPasswordResetNotification($token)
     {
         $url = url(config('app.frontend_url') . "/reset-password?token={$token}&email=" . $this->email);

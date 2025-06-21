@@ -58,4 +58,38 @@ class UserManagementController extends Controller
 
         return response()->json($users);
     }
+
+    public function approveEmployer(Request $request, $id)
+    {
+        // check user role
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $user = User::findOrFail($id);
+        if ($user->role !== 'employer') {
+            return response()->json(['message' => 'User is not an employer'], 400);
+        }
+
+        $user->is_active = true;
+        $user->save();
+
+        return response()->json(['message' => 'Employer approved successfully']);
+    }
+    public function rejectEmployer(Request $request, $id)
+    {
+        // check user role
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        $user = User::findOrFail($id);
+        if ($user->role !== 'employer') {
+            return response()->json(['message' => 'User is not an employer'], 400);
+        }
+
+        $user->delete();
+
+        return response()->json(['message' => 'Employer rejected and deleted successfully']);
+    }
 }

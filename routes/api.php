@@ -127,7 +127,8 @@ Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/users', [UserManagementController::class, 'allUsers']);
     Route::get('/users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
-    // ...other admin routes...
+    Route::post('/users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
+    Route::post('/users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
 });
 
 // Post reactions details
