@@ -127,7 +127,6 @@ public function destroy($id)
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    // ✅ لو تعليق وليس رد ➜ امسح كل الردود المرتبطة بيه أولًا
     if (is_null($comment->parent_comment_id)) {
         $comment->replies()->delete();
     }
@@ -138,8 +137,6 @@ public function destroy($id)
 }
 
 
-    // ✅ Optional: Separate route for updating a reply
-   // ✅ updateReply - ترجع بيانات الرد كاملة مع بيانات المستخدم
 public function updateReply(Request $request, $replyId)
 {
     $reply = Comment::whereNotNull('parent_comment_id')->findOrFail($replyId);

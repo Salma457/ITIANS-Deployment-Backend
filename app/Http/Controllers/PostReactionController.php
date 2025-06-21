@@ -17,7 +17,6 @@ class PostReactionController extends Controller
 
         $user = Auth::user();
 
-        // ✅ تأكد إن البوست موجود
         $post = Post::find($postId);
         if (!$post) {
             return response()->json(['message' => 'Post not found.'], 404);
@@ -35,7 +34,6 @@ class PostReactionController extends Controller
     {
         $user = Auth::user();
 
-        // ✅ تأكد إن البوست موجود
         $post = Post::find($postId);
         if (!$post) {
             return response()->json(['message' => 'Post not found.'], 404);
