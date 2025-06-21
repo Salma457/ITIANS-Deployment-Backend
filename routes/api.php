@@ -95,7 +95,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Jobs (except index/show which are public)
     Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
-    Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
+    Route::middleware('auth:sanctum')->get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
     Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
     Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
     Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);

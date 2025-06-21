@@ -9,43 +9,44 @@ use App\Http\Resources\JobResource;
 use App\Http\Resources\JobCollection;
 use App\Models\Job;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 class EmployerJobController extends Controller
 {
-    public function index(\Illuminate\Http\Request $request)
-{
-    $query = Job::with(['employer', 'statusChanger']);
+    public function index(Request $request)
+    {
+        $query = Job::with(['employer', 'statusChanger']);
 
-    if ($request->filled('title')) {
-        $query->where('job_title', 'like', '%' . $request->title . '%');
+        if ($request->filled('title')) {
+            $query->where('job_title', 'like', '%' . $request->title . '%');
+        }
+
+        if ($request->filled('job_type')) {
+            $query->where('job_type', $request->job_type);
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('job_location')) {
+            $query->where('job_location', $request->job_location);
+        }
+
+        if ($request->filled('min_salary')) {
+            $query->where('salary_range_min', '>=', $request->min_salary);
+        }
+
+        if ($request->filled('max_salary')) {
+            $query->where('salary_range_max', '<=', $request->max_salary);
+        }
+
+        return new JobCollection($query->paginate(10));
     }
 
-    if ($request->filled('job_type')) {
-        $query->where('job_type', $request->job_type);
-    }
-
-    if ($request->filled('status')) {
-        $query->where('status', $request->status);
-    }
-
-    if ($request->filled('job_location')) {
-        $query->where('job_location', $request->job_location);
-    }
-
-    if ($request->filled('min_salary')) {
-        $query->where('salary_range_min', '>=', $request->min_salary);
-    }
-
-    if ($request->filled('max_salary')) {
-        $query->where('salary_range_max', '<=', $request->max_salary);
-    }
-
-    return new JobCollection($query->paginate(10));
-}
-
-  public function employerJobs(Request $request)
+    public function employerJobs(Request $request)
     {
         $user = $request->user();
         $jobs = Job::withTrashed()->where('employer_id', $user->id)->get();
@@ -62,9 +63,15 @@ class EmployerJobController extends Controller
         return new JobResource($job->load(['employer', 'statusChanger']));
     }
 
-    public function show(Job $job)
+    public function show(Request $request, Job $job)
     {
-        $job->increment('views_count');
+        auth()->shouldUse('api'); // 👈 Force API guard
+
+        $user = $request->user();
+        // Only increment views if the user is NOT admin and NOT the employer who created the job
+        if (!$user || ($user->role !== 'admin' && $user->id !== $job->employer_id)) {
+            $job->increment('views_count');
+        }
         return new JobResource($job->load(['employer', 'statusChanger']));
     }
 
