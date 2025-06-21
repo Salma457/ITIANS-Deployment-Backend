@@ -135,6 +135,7 @@ public function store(Request $request)
 
 
 
+
     // get all Itian job applications
     public function index()
     {
@@ -309,7 +310,8 @@ public function update(Request $request, $id)
 }
 
 
+
+
 }
 
 
-// check if current authenticated ITIAN has applied to a specific job

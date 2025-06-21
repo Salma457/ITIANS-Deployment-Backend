@@ -13,37 +13,73 @@ use Illuminate\Support\Facades\Gate;
 
 class EmployerJobController extends Controller
 {
-    public function index(\Illuminate\Http\Request $request)
+public function index(\Illuminate\Http\Request $request)
 {
     $query = Job::with(['employer', 'statusChanger']);
 
-    if ($request->filled('title')) {
-        $query->where('job_title', 'like', '%' . $request->title . '%');
+    // Handle search (title)
+    $searchTerm = $request->filled('search') ? $request->search : ($request->filled('title') ? $request->title : null);
+    
+    if ($searchTerm) {
+        $query->where('job_title', 'like', '%' . $searchTerm . '%');
     }
 
+    // Handle job type filter
     if ($request->filled('job_type')) {
         $query->where('job_type', $request->job_type);
     }
 
+    // Handle status filter
     if ($request->filled('status')) {
         $query->where('status', $request->status);
     }
 
+    // Handle location filter
     if ($request->filled('job_location')) {
         $query->where('job_location', $request->job_location);
     }
 
+    // Handle salary range filters
     if ($request->filled('min_salary')) {
-        $query->where('salary_range_min', '>=', $request->min_salary);
+        $query->where('salary_range_min', '>=', (float)$request->min_salary);
     }
-
+    
     if ($request->filled('max_salary')) {
-        $query->where('salary_range_max', '<=', $request->max_salary);
+        $query->where('salary_range_max', '<=', (float)$request->max_salary);
     }
 
-    return new JobCollection($query->paginate(10));
-}
+    // Handle sorting
+    if ($request->filled('sort')) {
+        $sortDirection = str_starts_with($request->sort, '-') ? 'desc' : 'asc';
+        $sortField = ltrim($request->sort, '-');
+        
+        // Validate sortable fields
+        $sortableFields = ['posted_date', 'salary_range_min', 'salary_range_max', 'application_deadline'];
+        if (in_array($sortField, $sortableFields)) {
+            $query->orderBy($sortField, $sortDirection);
+        }
+    } else {
+        // Default sorting by newest first
+        $query->latest('posted_date');
+    }
 
+    // Pagination with default values
+    $perPage = $request->get('per_page', 10);
+    $page = $request->get('page', 1);
+
+$paginated = $query->paginate($perPage, ['*'], 'page', $page);
+
+return response()->json([
+    'data' => JobResource::collection($paginated->items()),
+    'meta' => [
+        'current_page' => $paginated->currentPage(),
+        'last_page' => $paginated->lastPage(),
+        'per_page' => $paginated->perPage(),
+        'total' => $paginated->total(),
+    ],
+]);
+
+}
 
     public function store(StoreJobRequest $request)
     {
@@ -109,5 +145,6 @@ class EmployerJobController extends Controller
 
         return response()->json($stats);
     }
+    
 
 }
