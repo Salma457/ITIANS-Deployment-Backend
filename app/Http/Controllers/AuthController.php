@@ -31,11 +31,11 @@ class AuthController extends Controller
 
         // Handle employer registration request
         if ($user->role === 'employer' && $request->has('company_brief')) {
-            $existing = \App\Models\EmployerRegistrationRequest::where('user_id', $user->id)->first();
+            $existing = EmployerRegistrationRequest::where('user_id', $user->id)->first();
             if ($existing) {
                 return response()->json(['message' => 'You already submitted a registration request.'], 400);
             }
-            \App\Models\EmployerRegistrationRequest::create([
+            EmployerRegistrationRequest::create([
                 'user_id' => $user->id,
                 'company_brief' => $request->input('company_brief'),
                 'status' => 'Pending',

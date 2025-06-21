@@ -14,4 +14,9 @@ class EmployerRegistrationRequest extends Model
         'company_brief',
         'status',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
 }

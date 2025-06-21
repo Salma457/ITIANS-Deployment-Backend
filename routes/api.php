@@ -129,4 +129,6 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
     Route::post('/users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
     Route::post('/users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
+    Route::delete('/users/{id}', [UserManagementController::class, 'deleteUser']);
+
 });
