@@ -12,7 +12,7 @@ class PostReactionController extends Controller
     public function react(Request $request, $postId)
     {
         $request->validate([
-            'reaction_type' => 'required|in:like,love,haha,sad,angry,support'
+            'reaction_type' => 'required|in:like,love,haha,sad,angry,support,wow'
         ]);
 
         $user = Auth::user();

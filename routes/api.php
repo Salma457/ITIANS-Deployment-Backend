@@ -132,8 +132,6 @@
 });
 
 
-
-
     // Job applications
     Route::middleware('auth:sanctum')->group(function () {
         Route::post('job-application', [JobApplicationController::class,'store']);
@@ -151,5 +149,5 @@
     Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
     // Handle reset request
     Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
-// api.php
-Route::get('/posts/{post}/reactions/details', [PostReactionController::class, 'getReactionDetails']);
+    // api.php
+    Route::get('/posts/{post}/reactions/details', [PostReactionController::class, 'getReactionDetails']);

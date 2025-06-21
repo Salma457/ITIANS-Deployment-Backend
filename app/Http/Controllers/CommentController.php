@@ -117,37 +117,56 @@ class CommentController extends Controller
     }
 
     // ✅ Delete comment or reply
-    public function destroy($id)
-    {
-        $comment = Comment::findOrFail($id);
-        $post = $comment->post;
+   // ✅ Delete comment or reply + delete all its replies if it's a comment
+public function destroy($id)
+{
+    $comment = Comment::findOrFail($id);
+    $post = $comment->post;
 
-        if ($comment->user_id !== Auth::id() && $post->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $comment->delete();
-
-        return response()->json(['message' => 'Comment deleted successfully']);
+    if ($comment->user_id !== Auth::id() && $post->user_id !== Auth::id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    // ✅ لو تعليق وليس رد ➜ امسح كل الردود المرتبطة بيه أولًا
+    if (is_null($comment->parent_comment_id)) {
+        $comment->replies()->delete();
+    }
+
+    $comment->delete();
+
+    return response()->json(['message' => 'Comment deleted successfully']);
+}
+
 
     // ✅ Optional: Separate route for updating a reply
-    public function updateReply(Request $request, $replyId)
-    {
-        $reply = Comment::whereNotNull('parent_comment_id')->findOrFail($replyId);
+   // ✅ updateReply - ترجع بيانات الرد كاملة مع بيانات المستخدم
+public function updateReply(Request $request, $replyId)
+{
+    $reply = Comment::whereNotNull('parent_comment_id')->findOrFail($replyId);
 
-        if ($reply->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $request->validate(['content' => 'required|string']);
-        $reply->update(['content' => $request->input('content')]);
-
-        return response()->json([
-            'message' => 'Reply updated successfully',
-            'reply' => $reply
-        ]);
+    if ($reply->user_id !== Auth::id()) {
+        return response()->json(['message' => 'Unauthorized'], 403);
     }
+
+    $request->validate(['content' => 'required|string']);
+    $reply->update(['content' => $request->input('content')]);
+    $reply->load('user'); // علشان نضمن بيانات الـ user
+
+    return response()->json([
+        'message' => 'Reply updated successfully',
+        'reply' => [
+            'id' => $reply->id,
+            'content' => $reply->content,
+            'created_at' => $reply->created_at,
+            'user' => [
+                'id' => $reply->user->id,
+                'name' => $reply->user->name,
+                'profile_picture' => $reply->user->profile_picture,
+            ],
+        ]
+    ]);
+}
+
 
     // ✅ Optional: Separate route for deleting a reply
     public function destroyReply($replyId)
