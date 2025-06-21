@@ -1,6 +1,5 @@
 <?php
 
-//use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
 use App\Http\Controllers\Itian\ItianRegistrationRequestController;
@@ -16,13 +15,37 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
 
+// ------------------- Public routes -------------------
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::get('jobs', [EmployerJobController::class, 'index']);
+Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
+Route::get('posts/{post}/comments', [CommentController::class, 'index']);
+Route::get('/posts/{post}/reactions/details', [PostReactionController::class, 'getReactionDetails']);
+Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 
-
+// ------------------- Authenticated routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
+    // Auth
+    Route::get('/logout', [AuthController::class, 'logout']);
+
+    // Posts
+    Route::apiResource('posts', PostController::class);
+    Route::get('/myposts', [PostController::class, 'myPosts']);
+
     // Post reactions
     Route::post('/posts/{post}/react', [PostReactionController::class, 'react']);
     Route::delete('/posts/{post}/reaction', [PostReactionController::class, 'removeReaction']);
     Route::get('/posts/{post}/reactions', [PostReactionController::class, 'getReactions']);
+
+    // Comments
+    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
+    Route::put('comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+    // Optional: replies
+    Route::put('/replies/{id}', [CommentController::class, 'updateReply']);
+    Route::delete('/replies/{id}', [CommentController::class, 'destroyReply']);
 
     // Skills
     Route::post('/skills', [ItianSkillProjectController::class, 'storeSkill']);
@@ -70,14 +93,14 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
     });
 
-    // Posts
-    Route::apiResource('posts', PostController::class);
-    Route::get('/myposts', [PostController::class, 'myPosts']);
-
-    // Comments
-    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
-    Route::put('comments/{comment}', [CommentController::class, 'update']);
-    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+    // Jobs (except index/show which are public)
+    Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
+    Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
+    Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
+    Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
+    Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);
+    Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
+    Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
 
     // Job applications
     Route::post('job-application', [JobApplicationController::class, 'store']);
@@ -97,39 +120,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
     Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
 
-    // Employer registration requests (add similar routes if needed)
+    // Employer registration requests (add your routes here if needed)
 });
 
-// Public routes
-Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
-Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
-Route::get('jobs', [EmployerJobController::class, 'index']);
-Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
-Route::middleware(['auth:sanctum'])->group(function () {
-    Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
-    Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
-    Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
-    Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
-    Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);
-    Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
-    Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
-});
-
-// Comments (public)
-Route::get('posts/{post}/comments', [CommentController::class, 'index']);
-
-// Password reset routes
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
-
-// Admin routes
+// ------------------- Admin routes -------------------
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::get('/users', [UserManagementController::class, 'allUsers']);
     Route::get('/users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
     Route::post('/users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
     Route::post('/users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
 });
-
-// Post reactions details
-Route::get('/posts/{post}/reactions/details', [PostReactionController::class, 'getReactionDetails']);
