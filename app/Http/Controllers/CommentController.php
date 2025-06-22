@@ -11,48 +11,61 @@ class CommentController extends Controller
 {
     // ✅ Get comments with replies + pagination
     public function index(Request $request, $postId)
-    {
-        $perPage = $request->query('per_page', 5);
+{
+    $perPage = $request->query('per_page', 5);
 
-        $comments = Comment::where('post_id', $postId)
-            ->whereNull('parent_comment_id')
-            ->with(['replies.user', 'user'])
-            ->latest()
-            ->paginate($perPage);
+    $comments = Comment::where('post_id', $postId)
+        ->whereNull('parent_comment_id')
+        ->with(['replies.user.itianProfile', 'user.itianProfile'])
+        ->latest()
+        ->paginate($perPage);
 
-        $data = $comments->getCollection()->map(function ($comment) {
-            return [
-                'id' => $comment->id,
-                'content' => $comment->content,
-                'created_at' => $comment->created_at,
-                'user' => [
-                    'id' => $comment->user->id,
-                    'name' => $comment->user->name,
-                    'profile_picture' => $comment->user->profile_picture,
-                ],
-                'replies' => $comment->replies->map(function ($reply) {
-                    return [
-                        'id' => $reply->id,
-                        'content' => $reply->content,
-                        'created_at' => $reply->created_at,
-                        'user' => [
-                            'id' => $reply->user->id,
-                            'name' => $reply->user->name,
-                            'profile_picture' => $reply->user->profile_picture,
-                        ],
-                    ];
-                }),
-            ];
-        });
+    $data = $comments->getCollection()->map(function ($comment) {
+        return [
+            'id' => $comment->id,
+            'content' => $comment->content,
+            'created_at' => $comment->created_at,
+            'user' => [
+                'id' => $comment->user->id,
+                'name' => optional($comment->user->itianProfile)->first_name
+                        ? optional($comment->user->itianProfile)->first_name . ' ' . optional($comment->user->itianProfile)->last_name
+                        : $comment->user->name,
+                'profile_picture' => optional($comment->user->itianProfile)->profile_picture,
+                'iti_track' => optional($comment->user->itianProfile)->iti_track,
+                'graduation_year' => optional($comment->user->itianProfile)->graduation_year,
+                'linkedin' => optional($comment->user->itianProfile)->linkedin_profile_url,
+                'github' => optional($comment->user->itianProfile)->github_profile_url,
+            ],
+            'replies' => $comment->replies->map(function ($reply) {
+                return [
+                    'id' => $reply->id,
+                    'content' => $reply->content,
+                    'created_at' => $reply->created_at,
+                    'user' => [
+                        'id' => $reply->user->id,
+                        'name' => optional($reply->user->itianProfile)->first_name
+                                ? optional($reply->user->itianProfile)->first_name . ' ' . optional($reply->user->itianProfile)->last_name
+                                : $reply->user->name,
+                        'profile_picture' => optional($reply->user->itianProfile)->profile_picture,
+                        'iti_track' => optional($reply->user->itianProfile)->iti_track,
+                        'graduation_year' => optional($reply->user->itianProfile)->graduation_year,
+                        'linkedin' => optional($reply->user->itianProfile)->linkedin_profile_url,
+                        'github' => optional($reply->user->itianProfile)->github_profile_url,
+                    ],
+                ];
+            }),
+        ];
+    });
 
-        return response()->json([
-            'data' => $data,
-            'current_page' => $comments->currentPage(),
-            'last_page' => $comments->lastPage(),
-            'per_page' => $comments->perPage(),
-            'total' => $comments->total(),
-        ]);
-    }
+    return response()->json([
+        'data' => $data,
+        'current_page' => $comments->currentPage(),
+        'last_page' => $comments->lastPage(),
+        'per_page' => $comments->perPage(),
+        'total' => $comments->total(),
+    ]);
+}
+
 
     // ✅ Create comment or reply
     public function store(Request $request, $postId)
@@ -75,72 +88,93 @@ class CommentController extends Controller
             'parent_comment_id' => $request->input('parent_comment_id'),
         ]);
 
-        $comment->load(['user', 'replies.user']);
+        $comment->load(['user.itianProfile']);
 
         return response()->json([
-            'message' => 'Comment created successfully',
-            'comment' => [
-                'id' => $comment->id,
-                'content' => $comment->content,
-                'created_at' => $comment->created_at,
-                'user' => [
-                    'id' => $comment->user->id,
-                    'name' => $comment->user->name,
-                    'profile_picture' => $comment->user->profile_picture,
-                ],
-                'replies' => [],
-            ]
-        ], 201);
+    'message' => 'Comment created successfully',
+    'comment' => [
+        'id' => $comment->id,
+        'content' => $comment->content,
+        'created_at' => $comment->created_at,
+        'user' => [
+            'id' => $comment->user->id,
+            'name' => optional($comment->user->itianProfile)->first_name
+                    ? optional($comment->user->itianProfile)->first_name . ' ' . optional($comment->user->itianProfile)->last_name
+                    : $comment->user->name,
+            'profile_picture' => optional($comment->user->itianProfile)->profile_picture,
+            'iti_track' => optional($comment->user->itianProfile)->iti_track,
+            'graduation_year' => optional($comment->user->itianProfile)->graduation_year,
+            'linkedin' => optional($comment->user->itianProfile)->linkedin_profile_url,
+            'github' => optional($comment->user->itianProfile)->github_profile_url,
+        ],
+        'replies' => [],
+    ]
+], 201);
+
     }
 
     // ✅ Update comment or reply
-    public function update(Request $request, $id)
-    {
-        $comment = Comment::findOrFail($id);
-
-        if ($comment->user_id !== Auth::id()) {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $request->validate([
-            'content' => 'required|string',
-        ]);
-
-        $comment->update([
-            'content' => $request->input('content'),
-        ]);
-
-        return response()->json([
-            'message' => 'Comment updated successfully',
-            'comment' => $comment,
-        ]);
-    }
-
-    // ✅ Delete comment or reply
-   // ✅ Delete comment or reply + delete all its replies if it's a comment
-public function destroy($id)
+   public function update(Request $request, $id)
 {
     $comment = Comment::findOrFail($id);
-    $post = $comment->post;
 
-    if ($comment->user_id !== Auth::id() && $post->user_id !== Auth::id()) {
+    if ($comment->user_id !== Auth::id()) {
         return response()->json(['message' => 'Unauthorized'], 403);
     }
 
-    // ✅ لو تعليق وليس رد ➜ امسح كل الردود المرتبطة بيه أولًا
-    if (is_null($comment->parent_comment_id)) {
-        $comment->replies()->delete();
-    }
+    $request->validate([
+        'content' => 'required|string',
+    ]);
 
-    $comment->delete();
+    $comment->update([
+        'content' => $request->input('content'),
+    ]);
 
-    return response()->json(['message' => 'Comment deleted successfully']);
+    $comment->load('user.itianProfile');
+
+    return response()->json([
+        'message' => 'Comment updated successfully',
+        'comment' => [
+            'id' => $comment->id,
+            'content' => $comment->content,
+            'created_at' => $comment->created_at,
+            'user' => [
+                'id' => $comment->user->id,
+                'name' => optional($comment->user->itianProfile)->first_name
+                        ? optional($comment->user->itianProfile)->first_name . ' ' . optional($comment->user->itianProfile)->last_name
+                        : $comment->user->name,
+                'profile_picture' => optional($comment->user->itianProfile)->profile_picture,
+                'iti_track' => optional($comment->user->itianProfile)->iti_track,
+                'graduation_year' => optional($comment->user->itianProfile)->graduation_year,
+                'linkedin' => optional($comment->user->itianProfile)->linkedin_profile_url,
+                'github' => optional($comment->user->itianProfile)->github_profile_url,
+            ],
+        ]
+    ]);
 }
 
 
-    // ✅ Optional: Separate route for updating a reply
-   // ✅ updateReply - ترجع بيانات الرد كاملة مع بيانات المستخدم
-public function updateReply(Request $request, $replyId)
+    // ✅ Delete comment or reply (with nested replies if it's a parent comment)
+    public function destroy($id)
+    {
+        $comment = Comment::findOrFail($id);
+        $post = $comment->post;
+
+        if ($comment->user_id !== Auth::id() && $post->user_id !== Auth::id()) {
+            return response()->json(['message' => 'Unauthorized'], 403);
+        }
+
+        if (is_null($comment->parent_comment_id)) {
+            $comment->replies()->delete();
+        }
+
+        $comment->delete();
+
+        return response()->json(['message' => 'Comment deleted successfully']);
+    }
+
+    // ✅ Update reply only
+   public function updateReply(Request $request, $replyId)
 {
     $reply = Comment::whereNotNull('parent_comment_id')->findOrFail($replyId);
 
@@ -150,7 +184,7 @@ public function updateReply(Request $request, $replyId)
 
     $request->validate(['content' => 'required|string']);
     $reply->update(['content' => $request->input('content')]);
-    $reply->load('user'); // علشان نضمن بيانات الـ user
+    $reply->load('user.itianProfile');
 
     return response()->json([
         'message' => 'Reply updated successfully',
@@ -160,15 +194,20 @@ public function updateReply(Request $request, $replyId)
             'created_at' => $reply->created_at,
             'user' => [
                 'id' => $reply->user->id,
-                'name' => $reply->user->name,
-                'profile_picture' => $reply->user->profile_picture,
+                'name' => optional($reply->user->itianProfile)->first_name
+                        ? optional($reply->user->itianProfile)->first_name . ' ' . optional($reply->user->itianProfile)->last_name
+                        : $reply->user->name,
+                'profile_picture' => optional($reply->user->itianProfile)->profile_picture,
+                'iti_track' => optional($reply->user->itianProfile)->iti_track,
+                'graduation_year' => optional($reply->user->itianProfile)->graduation_year,
+                'linkedin' => optional($reply->user->itianProfile)->linkedin_profile_url,
+                'github' => optional($reply->user->itianProfile)->github_profile_url,
             ],
-        ]
+        ],
     ]);
 }
 
-
-    // ✅ Optional: Separate route for deleting a reply
+    // ✅ Delete reply only
     public function destroyReply($replyId)
     {
         $reply = Comment::whereNotNull('parent_comment_id')->findOrFail($replyId);
