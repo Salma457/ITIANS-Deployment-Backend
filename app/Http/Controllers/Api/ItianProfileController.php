@@ -167,68 +167,24 @@ class ItianProfileController extends Controller
         return response()->json(['message' => 'Profile deleted']);
     }
 
-//   public function publicShow($username)
-// {
-//     try {
-//         // Fetch profile with related data (skills, projects, and user) based on username
-//         $profile = ItianProfile::with(['skills', 'projects', 'user'])
-//             ->whereHas('user', function ($query) use ($username) {
-//                 $query->where('username', $username);
-//             })
-//             ->first();
-
-//         // Log the request for debugging
-//         Log::info('Public profile request for username: ' . $username . ', Profile found: ' . ($profile ? 'Yes' : 'No'));
-
-//         if (!$profile) {
-//             return response()->json(['message' => 'Profile not found'], 404);
-//         }
-
-//         // Prepare response data
-//         $data = $profile->toArray();
-//         $data['email'] = $profile->user->email ?? null;
-//         $data['username'] = $profile->user->username ?? null;
-//         $data['cv_url'] = $profile->cv ? asset('storage/' . $profile->cv) : null;
-//         $data['profile_picture_url'] = $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : null;
-
-//         // Return public data
-//         return response()->json($data, 200);
-
-//     } catch (\Exception $e) {
-//         // Log the exception for debugging
-//         Log::error('Error fetching public profile for username ' . $username . ': ' . $e->getMessage());
-//         return response()->json(['message' => 'Server error occurred'], 500);
-//     }
-// }
-
-public function showPublic($username)
-{
-    try {
-        // Fetch profile with related data (skills, projects, and user) based on username
-        $profile = ItianProfile::with(['skills', 'projects', 'user'])
-            ->whereHas('user', function ($query) use ($username) {
-                $query->where('username', $username);
-            })
+    // تم تغيير اسم الميثود من publicShow إلى showProfileByUserId
+    public function showProfileByUserId($user_id)
+    {
+        $profile = ItianProfile::with(['skills', 'projects'])
+            ->where('user_id', $user_id)
             ->first();
 
         if (!$profile) {
             return response()->json(['message' => 'Profile not found'], 404);
         }
 
-        // Prepare response data
         $data = $profile->toArray();
-        $data['email'] = $profile->user->email ?? null;
-        $data['username'] = $profile->user->username ?? null;
         $data['cv_url'] = $profile->cv ? asset('storage/' . $profile->cv) : null;
         $data['profile_picture_url'] = $profile->profile_picture ? asset('storage/' . $profile->profile_picture) : null;
 
-        // Return public data
-        return response()->json($data, 200);
-
-    } catch (\Exception $e) {
-        Log::error('Error fetching public profile for username ' . $username . ': ' . $e->getMessage());
-        return response()->json(['message' => 'Server error occurred'], 500);
+        return response()->json([
+            'message' => 'Profile data retrieved successfully',
+            'data' => $data
+        ]);
     }
-}
-
 }
