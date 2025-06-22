@@ -16,7 +16,7 @@ use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReportController;
 
-// ------------------- Public routes -------------------
+// ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
 Route::get('jobs', [EmployerJobController::class, 'index']);
@@ -26,16 +26,32 @@ Route::get('/posts/{post}/reactions/details', [PostReactionController::class, 'g
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 
-// ------------------- Authenticated routes -------------------
+// Public Profile for Employers (if you still want this to be public)
+Route::get('/employer-public-profile/{username}',[EmployerProfileController::class, 'showPublic']);
+
+// ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth
+    // Authentication
     Route::get('/logout', [AuthController::class, 'logout']);
+
+    // Itian Profile (Now Protected)
+    Route::get('/itian-profile/{user_id}', [ItianProfileController::class, 'showProfileByUserId']); // تم تغيير اسم الميثود
+    Route::post('/itian-profile', [ItianProfileController::class, 'store']);
+    Route::get('/itian-profile', [ItianProfileController::class, 'show']); // هذا لعرض بروفايل المستخدم الذي قام بتسجيل الدخول
+    Route::post('/itian-profiles/{user_id}/update', [ItianProfileController::class, 'update']);
+    Route::delete('/itian-profile', [ItianProfileController::class, 'destroy']);
+
+    // Employer Profile
+    Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
+    Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
+    Route::post('/employer-profile/update', [EmployerProfileController::class, 'update']);
+    Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
 
     // Posts
     Route::apiResource('posts', PostController::class);
     Route::get('/myposts', [PostController::class, 'myPosts']);
 
-    // Post reactions
+    // Post Reactions
     Route::post('/posts/{post}/react', [PostReactionController::class, 'react']);
     Route::delete('/posts/{post}/reaction', [PostReactionController::class, 'removeReaction']);
     Route::get('/posts/{post}/reactions', [PostReactionController::class, 'getReactions']);
@@ -44,7 +60,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('posts/{post}/comments', [CommentController::class, 'store']);
     Route::put('comments/{comment}', [CommentController::class, 'update']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
-    // Optional: replies
     Route::put('/replies/{id}', [CommentController::class, 'updateReply']);
     Route::delete('/replies/{id}', [CommentController::class, 'destroyReply']);
 
@@ -62,34 +77,36 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/projects', [ItianSkillProjectController::class, 'listProjects']);
     Route::get('/projects/profile/{itian_profile_id}', [ItianSkillProjectController::class, 'showProjectsByProfile']);
 
-    // Itian profile
-});
-// use App\Http\Controllers\CustomChatController;
-// use App\Http\Controllers\CommentController; 
+    // Jobs
+    Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
+    Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
+    Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
+    Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
+    Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);
+    Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
+    Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
 
+    // Job Applications
+    Route::post('job-application', [JobApplicationController::class, 'store']);
+    Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
+    Route::get('job/{job}/applications', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
+    Route::get('itian/job-application', [JobApplicationController::class, 'index']);
+    Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
+    Route::put('job-application/{id}', [JobApplicationController::class, 'update']);
+    Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
+    Route::put('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
+    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
 
-    Route::get('/public-profile/{username}', [ItianProfileController::class, 'showPublic']);
+    // Itian Registration Requests
+    Route::post('/itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
+    Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    // Route::put('/itian-profile', [ItianProfileController::class, 'update']);
-    Route::post('/itian-profiles/{user_id}/update', [ItianProfileController::class, 'update']);
-
-
-    // Route::post('/profile/update', [ProfileApiController::class, 'update'])->name('profile.update');
-
-    Route::post('/itian-profile', [ItianProfileController::class, 'store']);
-    Route::get('/itian-profile', [ItianProfileController::class, 'show']);
-    // Route::match(['POST', 'PUT'], '/itian-profile', [ItianProfileController::class, 'update']);
-    // Route::put('/itian-profile', [ItianProfileController::class, 'update']); // تم التعديل هنا
-    Route::delete('/itian-profile', [ItianProfileController::class, 'destroy']);
-    Route::get('/itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
-
-    // Employer profile
-    Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
-    Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
-    Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
-    Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
-    Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
+    // Reports
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::post('/reports', [ReportController::class, 'store']);
+    Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
+    Route::put('/reports/{id}/status', [ReportController::class, 'updateStatus']);
 
     // Chat
     Route::prefix('mychat')->group(function () {
@@ -107,163 +124,19 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
         Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
-});
-
-
-// Route::middleware('auth:sanctum')->match(['put', 'post'], '/itian-profile', [ItianProfileController::class, 'update']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    // Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
-    // Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
-    // Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
-    // Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
-   
-    // Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
-    Route::post('/employer-profile', [EmployerProfileController::class, 'store']); // إنشاء ملف شخصي لصاحب العمل
-    Route::get('/employer-profile', [EmployerProfileController::class, 'show']); // عرض ملف شخصي لصاحب العمل الموثق
-    // ملاحظة: لرفع الملفات (مثل اللوجو) مع طلب PUT، غالبًا ما نستخدم POST مع حقل _method = PUT
-    Route::post('/employer-profile/update', [EmployerProfileController::class, 'update']); // تحديث ملف شخصي لصاحب العمل
-    Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']); // حذف ملف شخصي لصاحب العمل
-});
-
-
-    Route::get('/employer-public-profile/{username}', [EmployerProfileController::class, 'showPublic']);
-
-
-
-Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
-    Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
-    Route::post('/idInfo', [CustomChatController::class, 'idFetchData']);
-    Route::post('/sendMessage', [CustomChatController::class, 'send']);
-    Route::post('/fetchMessages', [CustomChatController::class, 'fetch']);
-    Route::get('/download/{fileName}', [CustomChatController::class, 'download']);
-    Route::post('/makeSeen', [CustomChatController::class, 'seen']);
-    Route::get('/getContacts', [CustomChatController::class, 'getContacts']);
-    Route::post('/star', [CustomChatController::class, 'favorite']);
-    Route::post('/favorites', [CustomChatController::class, 'getFavorites']);
-    Route::get('/search', [CustomChatController::class, 'search']);
-    Route::post('/shared', [CustomChatController::class, 'sharedPhotos']);
-    Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
-    Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
-    Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
-});
-
-    Route::post('register', [AuthController::class, 'register']);
-    Route::post('login', [AuthController::class, 'login']);
-    Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
-
-
-Route::middleware('auth:sanctum')->group(function () {
-    // Create
-    Route::post('job-application', [JobApplicationController::class, 'store']);
-    
-    // Read
-    
-    Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
-    Route::get('job-application/job/{job_id}', [JobApplicationController::class, 'getJobApplications']);
-    Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
-    Route::get('itian/job-application', [JobApplicationController::class, 'index']);
-    Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
-    
-    // Update
-   // تحديث شامل باستخدام PUT
-Route::put('job-application/{id}', [JobApplicationController::class, 'update']);
-Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
-
-// لو حابة تخلي status بس ليه route منفصل (optional)
-Route::patch('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
-
-    
-    // Delete
-    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
-   
-
-
-});
-
-    Route::get('jobs', [EmployerJobController::class, 'index']);
-    Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
-
-    Route::middleware(['auth:sanctum'])->group(function () {
-        Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
-
-        Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
-
-        Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
-
-        Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
-
     });
-
-    // Jobs (except index/show which are public)
-    Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
-    Route::middleware('auth:sanctum')->get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
-    Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
-    Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
-    Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);
-    Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
-    Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
-
-    // Job applications
-    Route::post('job-application', [JobApplicationController::class, 'store']);
-    Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
-    Route::get('job/{job}/applications', [JobApplicationController::class, 'getJobApplications']);
-    Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
-    Route::get('itian/job-application', [JobApplicationController::class, 'index']);
-    Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
-    Route::put('job-application/{id}', [JobApplicationController::class, 'update']);
-    Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
-    Route::put('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
-    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
-
-    // Itian registration requests
-    Route::post('/itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
-    Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review'])->middleware('admin');
-    Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
-    Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
-
-    // Employer registration requests (add your routes here if needed)
-});
-        // Admin reviews request
-        Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review'])->middleware(('admin'));
-
-        // admin views request
-        Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
-        // Admin gets all requests
-        Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::apiResource('posts', App\Http\Controllers\PostController::class);
-});
-Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
-//comments
-// anyone can view comments
-Route::get('posts/{post}/comments', [CommentController::class, 'index']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
-    Route::put('comments/{comment}', [CommentController::class, 'update']);
-    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 });
 
-
-
-
-
-// ------------------- Admin routes -------------------
+// ------------------- Admin Routes -------------------
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    // User Management
     Route::get('/users', [UserManagementController::class, 'allUsers']);
     Route::get('/users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
     Route::post('/users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
     Route::post('/users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
     Route::delete('/users/{id}', [UserManagementController::class, 'deleteUser']);
 
-});
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/reports', [ReportController::class, 'index']);
-    Route::post('/reports', [ReportController::class, 'store']);
-    Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
-
-    Route::put('/reports/{id}/status', [ReportController::class, 'updateStatus']);
+    // Itian Registration Requests
+    Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
+    Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
 });
