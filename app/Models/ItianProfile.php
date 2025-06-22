@@ -32,13 +32,14 @@ class ItianProfile extends Model
         'current_job_title',
         'current_company',
         'preferred_job_locations',
+        'email',
+        'number',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
-
 
     public function getProfilePictureUrlAttribute()
     {
@@ -48,5 +49,17 @@ class ItianProfile extends Model
     public function jobApplications()
     {
         return $this->hasMany(JobApplication::class, 'itian_id', 'itian_profile_id');
+    }
+
+    // ✅ علاقات المشاريع
+    public function projects()
+    {
+        return $this->hasMany(ItianProject::class, 'itian_profile_id', 'itian_profile_id');
+    }
+
+    // ✅ علاقات المهارات
+    public function skills()
+    {
+        return $this->hasMany(ItianSkill::class, 'itian_profile_id', 'itian_profile_id');
     }
 }

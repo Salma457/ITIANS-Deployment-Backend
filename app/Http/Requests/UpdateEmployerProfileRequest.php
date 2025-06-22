@@ -5,27 +5,31 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 
-class StoreEmployerProfileRequest extends FormRequest
+class UpdateEmployerProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // Only authenticated users can store their profile
+        // Only authenticated users can update their profile
         return Auth::check();
     }
 
-    public function rules()
+    public function rules(): array
     {
         return [
-            'company_name' => 'required|string|max:255',
+            // 'sometimes' means the field is not required, but if present, it must follow the rules.
+            'company_name' => 'sometimes|string|max:255',
             'company_description' => 'nullable|string',
-            'website_url' => 'nullable|url|max:500', // Increased max length for URLs
+            'website_url' => 'nullable|url|max:500',
             'industry' => 'nullable|string|max:100',
             'company_size' => 'nullable|string|max:50',
             'location' => 'nullable|string|max:255',
-            'contact_person_name' => 'required|string|max:100',
-            'contact_email' => 'required|email|max:100',
+            'contact_person_name' => 'sometimes|string|max:100',
+            'contact_email' => 'sometimes|email|max:100',
             'phone_number' => 'nullable|string|max:20',
-            'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048', // Added gif, max 2MB
+            // For company_logo:
+            // 'nullable' allows it to be empty (e.g., if user removes it)
+            // 'image|mimes:...' validates if a file is provided and it's an image
+            'company_logo' => 'nullable|image|mimes:jpg,jpeg,png,gif|max:2048',
         ];
     }
 
