@@ -64,8 +64,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Itian profile
 });
-use App\Http\Controllers\CustomChatController;
-use App\Http\Controllers\CommentController; 
+// use App\Http\Controllers\CustomChatController;
+// use App\Http\Controllers\CommentController; 
 
 
     Route::get('/public-profile/{username}', [ItianProfileController::class, 'showPublic']);
@@ -82,7 +82,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Route::match(['POST', 'PUT'], '/itian-profile', [ItianProfileController::class, 'update']);
     // Route::put('/itian-profile', [ItianProfileController::class, 'update']); // تم التعديل هنا
     Route::delete('/itian-profile', [ItianProfileController::class, 'destroy']);
-<<<<<<< HEAD
     Route::get('/itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
 
     // Employer profile
@@ -92,7 +91,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
     Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
 
-<<<<<<< HEAD
     // Chat
     Route::prefix('mychat')->group(function () {
         Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
@@ -109,8 +107,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
         Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
-=======
-=======
 });
 
 
@@ -128,7 +124,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // ملاحظة: لرفع الملفات (مثل اللوجو) مع طلب PUT، غالبًا ما نستخدم POST مع حقل _method = PUT
     Route::post('/employer-profile/update', [EmployerProfileController::class, 'update']); // تحديث ملف شخصي لصاحب العمل
     Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']); // حذف ملف شخصي لصاحب العمل
->>>>>>> reports
 });
 
 
@@ -198,7 +193,6 @@ Route::patch('job-application/{id}/status', [JobApplicationController::class, 'u
 
         Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
 
->>>>>>> dfaf0b1a7b7d5e2ea3dc87d9b9bb347cba47ac44
     });
 
     // Jobs (except index/show which are public)
@@ -210,7 +204,6 @@ Route::patch('job-application/{id}/status', [JobApplicationController::class, 'u
     Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
     Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
 
-<<<<<<< HEAD
     // Job applications
     Route::post('job-application', [JobApplicationController::class, 'store']);
     Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
@@ -231,7 +224,6 @@ Route::patch('job-application/{id}/status', [JobApplicationController::class, 'u
 
     // Employer registration requests (add your routes here if needed)
 });
-=======
         // Admin reviews request
         Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review'])->middleware(('admin'));
 
@@ -239,7 +231,6 @@ Route::patch('job-application/{id}/status', [JobApplicationController::class, 'u
         Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
         // Admin gets all requests
         Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
-    });
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('posts', App\Http\Controllers\PostController::class);
@@ -258,7 +249,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 
->>>>>>> dfaf0b1a7b7d5e2ea3dc87d9b9bb347cba47ac44
 
 // ------------------- Admin routes -------------------
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
