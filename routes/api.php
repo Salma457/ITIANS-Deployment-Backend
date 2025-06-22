@@ -12,7 +12,7 @@ use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
 use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\Auth\PasswordResetController;
-
+use App\Http\Controllers\PaymentController;
 
 Route::middleware('auth:sanctum')->group(function () {
 
@@ -153,6 +153,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('comments/{comment}', [CommentController::class, 'update']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 });
+// Route::post('/create-payment-intent', [PaymentController::class, 'createIntent']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
+    Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
+});
+Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
+
 
 
 
