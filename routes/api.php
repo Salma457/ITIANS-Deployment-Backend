@@ -14,6 +14,7 @@ use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ReportController;
 
 // ------------------- Public routes -------------------
 Route::post('register', [AuthController::class, 'register']);
@@ -24,6 +25,8 @@ Route::get('posts/{post}/comments', [CommentController::class, 'index']);
 Route::get('/posts/{post}/reactions/details', [PostReactionController::class, 'getReactionDetails']);
 Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
+Route::get('/public-profile/{username}', [ItianProfileController::class, 'showPublic']);
+Route::get('/employer-public-profile/{username}', [EmployerProfileController::class, 'showPublic']);
 
 // ------------------- Authenticated routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
@@ -43,7 +46,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('posts/{post}/comments', [CommentController::class, 'store']);
     Route::put('comments/{comment}', [CommentController::class, 'update']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
-    // Optional: replies
     Route::put('/replies/{id}', [CommentController::class, 'updateReply']);
     Route::delete('/replies/{id}', [CommentController::class, 'destroyReply']);
 
@@ -67,11 +69,13 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/itian-profile', [ItianProfileController::class, 'update']);
     Route::delete('/itian-profile', [ItianProfileController::class, 'destroy']);
     Route::get('/itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
+    Route::post('/itian-profiles/{user_id}/update', [ItianProfileController::class, 'update']);
 
     // Employer profile
     Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
     Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
     Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
+    Route::post('/employer-profile/update', [EmployerProfileController::class, 'update']); // for file uploads via POST
     Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
     Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
 
@@ -120,6 +124,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
     Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     // Employer registration requests (add your routes here if needed)
+
+    // Reports
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::post('/reports', [ReportController::class, 'store']);
+    Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
+    Route::put('/reports/{id}/status', [ReportController::class, 'updateStatus']);
 
     // ------------------- Admin routes -------------------
     Route::middleware('admin')->group(function () {
