@@ -14,6 +14,7 @@ use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
+use App\Http\Controllers\ReportController;
 
 // ------------------- Public routes -------------------
 Route::post('register', [AuthController::class, 'register']);
@@ -62,10 +63,26 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/projects/profile/{itian_profile_id}', [ItianSkillProjectController::class, 'showProjectsByProfile']);
 
     // Itian profile
+});
+use App\Http\Controllers\CustomChatController;
+use App\Http\Controllers\CommentController; 
+
+
+    Route::get('/public-profile/{username}', [ItianProfileController::class, 'showPublic']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Route::put('/itian-profile', [ItianProfileController::class, 'update']);
+    Route::post('/itian-profiles/{user_id}/update', [ItianProfileController::class, 'update']);
+
+
+    // Route::post('/profile/update', [ProfileApiController::class, 'update'])->name('profile.update');
+
     Route::post('/itian-profile', [ItianProfileController::class, 'store']);
     Route::get('/itian-profile', [ItianProfileController::class, 'show']);
-    Route::put('/itian-profile', [ItianProfileController::class, 'update']);
+    // Route::match(['POST', 'PUT'], '/itian-profile', [ItianProfileController::class, 'update']);
+    // Route::put('/itian-profile', [ItianProfileController::class, 'update']); // تم التعديل هنا
     Route::delete('/itian-profile', [ItianProfileController::class, 'destroy']);
+<<<<<<< HEAD
     Route::get('/itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
 
     // Employer profile
@@ -93,7 +110,31 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
 =======
+=======
 });
+
+
+// Route::middleware('auth:sanctum')->match(['put', 'post'], '/itian-profile', [ItianProfileController::class, 'update']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Route::post('/employer-profile', [EmployerProfileController::class, 'store']);
+    // Route::get('/employer-profile', [EmployerProfileController::class, 'show']);
+    // Route::put('/employer-profile', [EmployerProfileController::class, 'update']);
+    // Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
+   
+    // Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
+    Route::post('/employer-profile', [EmployerProfileController::class, 'store']); // إنشاء ملف شخصي لصاحب العمل
+    Route::get('/employer-profile', [EmployerProfileController::class, 'show']); // عرض ملف شخصي لصاحب العمل الموثق
+    // ملاحظة: لرفع الملفات (مثل اللوجو) مع طلب PUT، غالبًا ما نستخدم POST مع حقل _method = PUT
+    Route::post('/employer-profile/update', [EmployerProfileController::class, 'update']); // تحديث ملف شخصي لصاحب العمل
+    Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']); // حذف ملف شخصي لصاحب العمل
+>>>>>>> reports
+});
+
+
+    Route::get('/employer-public-profile/{username}', [EmployerProfileController::class, 'showPublic']);
+
+
 
 Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
     Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
@@ -227,4 +268,12 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
     Route::delete('/users/{id}', [UserManagementController::class, 'deleteUser']);
 
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/reports', [ReportController::class, 'index']);
+    Route::post('/reports', [ReportController::class, 'store']);
+    Route::delete('/reports/{id}', [ReportController::class, 'destroy']);
+
+    Route::put('/reports/{id}/status', [ReportController::class, 'updateStatus']);
 });
