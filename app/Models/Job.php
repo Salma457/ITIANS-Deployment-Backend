@@ -22,7 +22,7 @@ class Job extends Model
     public const STATUS_PENDING = 'Pending';
 
     // Location Constants
-    public const LOCATION_ON_SITE = 'on-site';
+    public const LOCATION_ON_SITE = 'On-site';
     public const LOCATION_REMOTE = 'Remote';
     public const LOCATION_HYBRID = 'Hybrid';
 
