@@ -10,38 +10,47 @@ use Illuminate\Support\Facades\Auth;
 
 class PaymentController extends Controller
 {
-    public function createCheckoutSession(Request $request)
+public function createCheckoutSession(Request $request)
 {
     $user = Auth::user();
 
     Stripe::setApiKey(env('STRIPE_SECRET'));
 
+    
+    $amount = 300; 
+    $currency = 'usd';
+
     $session = Session::create([
         'payment_method_types' => ['card'],
         'line_items' => [[
             'price_data' => [
-                'currency' => 'usd',
+                'currency' => $currency,
                 'product_data' => ['name' => 'Add New Job'],
-                'unit_amount' => 300,
+                'unit_amount' => $amount,
             ],
             'quantity' => 1,
         ]],
         'mode' => 'payment',
-        'success_url' => 'http://localhost:5173/success',
+        'success_url' => 'http://localhost:5173/employer/post-job',
         'cancel_url' => 'http://localhost:5173/cancel',
         'metadata' => ['user_id' => $user->id],
     ]);
 
+   
     Payment::create([
         'user_id' => $user->id,
+        
+        'stripe_session_id' => $session->id,
         'stripe_payment_intent_id' => $session->payment_intent,
-        'amount' => 300,
-        'currency' => 'usd',
+        'amount' => $amount / 100, 
+        'currency' => $currency,
         'used_for_job' => false,
     ]);
 
     return response()->json(['url' => $session->url]);
 }
+
+
 
     public function handleStripeWebhook(Request $request)
 {
@@ -58,7 +67,7 @@ class PaymentController extends Controller
 
             $payment = Payment::where('stripe_payment_intent_id', $paymentIntentId)->first();
             if ($payment) {
-                // ما بنغيرش used_for_job هنا لأنه بيتغير لما ينشر الوظيفة فعلاً
+                
             }
         }
 

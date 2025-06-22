@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
+use App\Models\EmployerRegistrationRequest;
 use App\Models\ItianRegistrationRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -24,6 +25,19 @@ class AuthController extends Controller
             ItianRegistrationRequest::create([
                 'user_id' => $user->id,
                 'certificate' => $path,
+                'status' => 'Pending',
+            ]);
+        }
+
+        // Handle employer registration request
+        if ($user->role === 'employer' && $request->has('company_brief')) {
+            $existing = EmployerRegistrationRequest::where('user_id', $user->id)->first();
+            if ($existing) {
+                return response()->json(['message' => 'You already submitted a registration request.'], 400);
+            }
+            EmployerRegistrationRequest::create([
+                'user_id' => $user->id,
+                'company_brief' => $request->input('company_brief'),
                 'status' => 'Pending',
             ]);
         }

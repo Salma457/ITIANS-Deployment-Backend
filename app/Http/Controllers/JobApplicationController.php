@@ -11,33 +11,36 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Storage;
+use App\Mail\ApprovedForInterviewMail;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\RegistrationRequestRejected;
 
 class JobApplicationController extends Controller
 {
 
     // display all applicants for a job (employer)
-    public function getJobApplications($job_id)
-    {
-        try{
-            $job = Job::findOrFail($job_id);     
-            // return $job;
+   public function getJobApplications($job_id)
+{
+    try {
+        $job = Job::findOrFail($job_id);     
 
-            if ($job->employer->id !== Auth::id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
-            $jobApplications = JobApplication::where("job_id", $job_id)->get();
-
-            return response()->json(data: $jobApplications);
-            
-        }catch(\Exception $e){
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage()
-            ], 500);
+        if (!$job->employer || $job->employer->id !== Auth::id()) {
+            return response()->json(['error' => 'Unauthorized'], 403);
         }
+
+$jobApplications = JobApplication::with('itian')->where("job_id", $job_id)->get();
+
+        return response()->json(['data' => $jobApplications]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
 
     // Itian send application 
@@ -178,30 +181,48 @@ public function store(Request $request)
 
 
 
-    // update job application status. employer sends status of job application.
-    public function updateStatus(UpdateJobApplicationRequest $request, $id)
-    {
+public function updateStatus(Request $request, $id)
+{
+    try {
+        $request->validate([
+            'status' => 'required|in:approved,rejected,pending',
+        ]);
 
+        $application = JobApplication::with('itian.user', 'job')->findOrFail($id);
+        $application->status = $request->status;
+        $application->save();
+
+     if (in_array($request->status, ['approved', 'rejected'])) {
+    $email = $application->itian->user->email ?? null;
+    if ($email) {
         try {
-            $application = JobApplication::findOrFail($id);
-            $job = $application->job;
-
-            if ($job->employer->id !== Auth::id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
+            if ($request->status === 'approved') {
+                Mail::to($email)->send(new ApprovedForInterviewMail($application));
+            } elseif ($request->status === 'rejected') {
+                Mail::to($email)->send(new RegistrationRequestRejected($application));
             }
-
-            $application->status = $request->status;
-            $application->save();
-
-            return response()->json(['message' => 'Status updated.', 'data' => $application]);
         } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage()
-            ], 500);
+            \Log::error('Mail send failed: ' . $e->getMessage());
         }
     }
+}
+
+
+        return response()->json(['message' => 'Application status updated successfully.']);
+    } catch (\Exception $e) {
+        \Log::error('updateStatus error: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Internal server error.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
+
+
+
+
+
 
     // job applicant deletes job application
     public function destroy($id)
