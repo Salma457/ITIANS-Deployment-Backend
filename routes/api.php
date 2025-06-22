@@ -75,6 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/employer-profile', [EmployerProfileController::class, 'destroy']);
     Route::get('/employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
 
+<<<<<<< HEAD
     // Chat
     Route::prefix('mychat')->group(function () {
         Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
@@ -91,6 +92,72 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
         Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
+=======
+});
+
+Route::middleware('auth:sanctum')->prefix('mychat')->group(function () {
+    Route::post('/chat/auth', [CustomChatController::class, 'pusherAuth']);
+    Route::post('/idInfo', [CustomChatController::class, 'idFetchData']);
+    Route::post('/sendMessage', [CustomChatController::class, 'send']);
+    Route::post('/fetchMessages', [CustomChatController::class, 'fetch']);
+    Route::get('/download/{fileName}', [CustomChatController::class, 'download']);
+    Route::post('/makeSeen', [CustomChatController::class, 'seen']);
+    Route::get('/getContacts', [CustomChatController::class, 'getContacts']);
+    Route::post('/star', [CustomChatController::class, 'favorite']);
+    Route::post('/favorites', [CustomChatController::class, 'getFavorites']);
+    Route::get('/search', [CustomChatController::class, 'search']);
+    Route::post('/shared', [CustomChatController::class, 'sharedPhotos']);
+    Route::post('/deleteConversation', [CustomChatController::class, 'deleteConversation']);
+    Route::post('/updateSettings', [CustomChatController::class, 'updateSettings']);
+    Route::post('/setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
+});
+
+    Route::post('register', [AuthController::class, 'register']);
+    Route::post('login', [AuthController::class, 'login']);
+    Route::middleware('auth:sanctum')->get('/logout', [AuthController::class, 'logout']);
+
+
+Route::middleware('auth:sanctum')->group(function () {
+    // Create
+    Route::post('job-application', [JobApplicationController::class, 'store']);
+    
+    // Read
+    
+    Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
+    Route::get('job-application/job/{job_id}', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
+    Route::get('itian/job-application', [JobApplicationController::class, 'index']);
+    Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
+    
+    // Update
+   // تحديث شامل باستخدام PUT
+Route::put('job-application/{id}', [JobApplicationController::class, 'update']);
+Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
+
+// لو حابة تخلي status بس ليه route منفصل (optional)
+Route::patch('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
+
+    
+    // Delete
+    Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
+   
+
+
+});
+
+    Route::get('jobs', [EmployerJobController::class, 'index']);
+    Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
+
+    Route::middleware(['auth:sanctum'])->group(function () {
+        Route::apiResource('jobs', EmployerJobController::class)->except(['index', 'show']);
+
+        Route::get('employer/jobs', [EmployerJobController::class, 'employerJobs']);
+
+        Route::patch('jobs/{job}/status', [EmployerJobController::class, 'updateStatus']);
+
+        Route::get('jobs-statistics', [EmployerJobController::class, 'statistics']);
+
+>>>>>>> dfaf0b1a7b7d5e2ea3dc87d9b9bb347cba47ac44
     });
 
     // Jobs (except index/show which are public)
@@ -102,6 +169,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
     Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
 
+<<<<<<< HEAD
     // Job applications
     Route::post('job-application', [JobApplicationController::class, 'store']);
     Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
@@ -122,6 +190,34 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Employer registration requests (add your routes here if needed)
 });
+=======
+        // Admin reviews request
+        Route::put('/itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review'])->middleware(('admin'));
+
+        // admin views request
+        Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
+        // Admin gets all requests
+        Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
+    });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('posts', App\Http\Controllers\PostController::class);
+});
+Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+//comments
+// anyone can view comments
+Route::get('posts/{post}/comments', [CommentController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
+    Route::put('comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+});
+
+
+
+
+>>>>>>> dfaf0b1a7b7d5e2ea3dc87d9b9bb347cba47ac44
 
 // ------------------- Admin routes -------------------
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
