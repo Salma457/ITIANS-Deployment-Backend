@@ -8,6 +8,7 @@ use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
 use App\Http\Controllers\PostReactionController;
@@ -101,11 +102,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('jobs-trashed', [EmployerJobController::class, 'trashed']);
     Route::post('jobs/{id}/restore', [EmployerJobController::class, 'restore']);
     Route::delete('jobs/{id}/force-delete', [EmployerJobController::class, 'forceDelete']);
-
     // Job applications
     Route::post('job-application', [JobApplicationController::class, 'store']);
     Route::get('job-application/single/{id}', [JobApplicationController::class, 'show']);
-    Route::get('job-application/job/{job_id}', [JobApplicationController::class, 'getJobApplications']);
+    Route::get('job/{job}/applications', [JobApplicationController::class, 'getJobApplications']);
     Route::get('employer/job-application', [JobApplicationController::class, 'getEmployerAllJobApplications']);
     Route::get('itian/job-application', [JobApplicationController::class, 'index']);
     Route::get('check-application/{job_id}', [JobApplicationController::class, 'checkIfApplied']);
@@ -120,7 +120,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show'])->middleware('admin');
     Route::get('/itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
     // Employer registration requests (add your routes here if needed)
-
+Route::get('/user', function () {
+    return response()->json(auth()->user());
+});
     // ------------------- Admin routes -------------------
     Route::middleware('admin')->group(function () {
         Route::get('/users', [UserManagementController::class, 'allUsers']);
@@ -129,4 +131,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
         Route::delete('/users/{id}', [UserManagementController::class, 'deleteUser']);
     });
+
+    //------------------- Notification-------------------
+Route::get('/my-notifications', [NotificationController::class, 'index']);
 });

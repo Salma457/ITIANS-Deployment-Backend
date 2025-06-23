@@ -13,6 +13,7 @@ use App\Models\EmployerProfile;
 
 class User extends Authenticatable
 {
+
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasApiTokens;
 
@@ -27,6 +28,7 @@ class User extends Authenticatable
         'password',
         'last_login',
         'role',
+
     ];
 
     /**
@@ -75,4 +77,9 @@ class User extends Authenticatable
 
         \Illuminate\Support\Facades\Mail::to($this->email)->send(new ResetPasswordMail($token, $this->email));
     }
+        public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'uuid');
+    }
+
 }
