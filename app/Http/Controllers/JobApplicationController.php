@@ -206,6 +206,7 @@ class JobApplicationController extends Controller
                             'notifiable_id' => $application->itian->user_id,
                             'type' => 'system',
                             'seen' => false,
+                            'job_id' => $application->job->id,
                         ]);
 
                         } elseif ($request->status === 'rejected') {
