@@ -97,77 +97,116 @@ class ItianProfileController extends Controller
     }
 
     public function update(Request $request, $user_id)
-    {
-        $itianProfile = ItianProfile::where('user_id', $user_id)->first();
+{
+    $itianProfile = ItianProfile::where('user_id', $user_id)->first();
 
-        if (!$itianProfile) {
-            return response()->json(['message' => 'Profile not found'], 404);
-        }
-
-        // ✅ رفع الصورة
-        if ($request->hasFile('profile_picture')) {
-            $imagePath = $request->file('profile_picture')->store('profile_pictures', 'public');
-            $itianProfile->profile_picture = $imagePath;
-        }
-
-        // ✅ رفع الـ CV
-        if ($request->hasFile('cv')) {
-            $cvPath = $request->file('cv')->store('cvs', 'public');
-            $itianProfile->cv = $cvPath;
-        }
-
-        // ✅ تحديث باقي البيانات
-        $itianProfile->update([
-            'first_name' => $request->input('first_name'),
-            'last_name' => $request->input('last_name'),
-            'bio' => $request->input('bio'),
-            'iti_track' => $request->input('iti_track'),
-            'graduation_year' => $request->input('graduation_year'),
-            'portfolio_url' => $request->input('portfolio_url'),
-            'linkedin_profile_url' => $request->input('linkedin_profile_url'),
-            'github_profile_url' => $request->input('github_profile_url'),
-            'is_open_to_work' => $request->boolean('is_open_to_work'),
-            'experience_years' => $request->input('experience_years'),
-            'current_job_title' => $request->input('current_job_title'),
-            'current_company' => $request->input('current_company'),
-            'preferred_job_locations' => $request->input('preferred_job_locations'),
-            'email' => $request->input('email'),
-            'number' => $request->input('number'),
-        ]);
-
-        $itianProfile->load(['skills', 'projects']);
-        $data = $itianProfile->toArray();
-        $data['cv_url'] = $itianProfile->cv ? asset('storage/' . $itianProfile->cv) : null;
-        $data['profile_picture_url'] = $itianProfile->profile_picture ? asset('storage/' . $itianProfile->profile_picture) : null;
-
-        return response()->json([
-            'message' => 'Profile updated successfully',
-            'data' => $data
-        ]);
+    if (!$itianProfile) {
+        return response()->json(['message' => 'Profile not found'], 404);
     }
 
-    public function destroy()
-    {
-        $profile = Auth::user()->itianProfile;
+    // تحديث البيانات الأساسية
+    $itianProfile->update([
+        'first_name' => $request->input('first_name'),
+        'last_name' => $request->input('last_name'),
+        'bio' => $request->input('bio'),
+        'iti_track' => $request->input('iti_track'),
+        'graduation_year' => $request->input('graduation_year'),
+        'portfolio_url' => $request->input('portfolio_url'),
+        'linkedin_profile_url' => $request->input('linkedin_profile_url'),
+        'github_profile_url' => $request->input('github_profile_url'),
+        'is_open_to_work' => $request->boolean('is_open_to_work'),
+        'experience_years' => $request->input('experience_years'),
+        'current_job_title' => $request->input('current_job_title'),
+        'current_company' => $request->input('current_company'),
+        'preferred_job_locations' => $request->input('preferred_job_locations'),
+        'email' => $request->input('email'),
+        'number' => $request->input('number'),
+    ]);
 
-        if (!$profile) {
-            return response()->json(['message' => 'Profile not found'], 404);
-        }
-
-        if ($profile->cv) {
-            Storage::disk('public')->delete($profile->cv);
-        }
-
-        if ($profile->profile_picture) {
-            Storage::disk('public')->delete($profile->profile_picture);
-        }
-
-        $profile->delete();
-
-        return response()->json(['message' => 'Profile deleted']);
+    // رفع الصورة
+    if ($request->hasFile('profile_picture')) {
+        $imagePath = $request->file('profile_picture')->store('profile_pictures', 'public');
+        $itianProfile->profile_picture = $imagePath;
     }
 
-    // تم تغيير اسم الميثود من publicShow إلى showProfileByUserId
+    // رفع الـ CV
+    if ($request->hasFile('cv')) {
+        $cvPath = $request->file('cv')->store('cvs', 'public');
+        $itianProfile->cv = $cvPath;
+    }
+
+    // تحديث الـ Skills
+    if ($request->has('skills')) {
+        $skillIds = [];
+        foreach ($request->input('skills') as $skillData) {
+            if (isset($skillData['skill_name']) && !empty(trim($skillData['skill_name']))) {
+                if (isset($skillData['id'])) {
+                    // تحديث Skill موجود
+                    $skill = ItianSkill::find($skillData['id']);
+                    if ($skill && $skill->itian_profile_id == $itianProfile->itian_profile_id) {
+                        $skill->update(['skill_name' => trim($skillData['skill_name'])]);
+                        $skillIds[] = $skill->id;
+                    }
+                } else {
+                    // إضافة Skill جديد
+                    $newSkill = ItianSkill::create([
+                        'itian_profile_id' => $itianProfile->itian_profile_id,
+                        'skill_name' => trim($skillData['skill_name']),
+                    ]);
+                    $skillIds[] = $newSkill->id;
+                }
+            }
+        }
+        // حذف الـ Skills القديمة اللي مش موجودة في الـ request
+        ItianSkill::where('itian_profile_id', $itianProfile->itian_profile_id)
+            ->whereNotIn('id', $skillIds)
+            ->delete();
+    }
+
+    // تحديث الـ Projects
+    if ($request->has('projects')) {
+        $projectIds = [];
+        foreach ($request->input('projects') as $projectData) {
+            if (isset($projectData['project_title']) && !empty(trim($projectData['project_title']))) {
+                if (isset($projectData['id'])) {
+                    // تحديث Project موجود
+                    $project = ItianProject::find($projectData['id']);
+                    if ($project && $project->itian_profile_id == $itianProfile->itian_profile_id) {
+                        $project->update([
+                            'project_title' => trim($projectData['project_title']),
+                            'description' => $projectData['description'] ?? null,
+                            'project_link' => $projectData['project_link'] ?? null,
+                        ]);
+                        $projectIds[] = $project->id;
+                    }
+                } else {
+                    // إضافة Project جديد
+                    $newProject = ItianProject::create([
+                        'itian_profile_id' => $itianProfile->itian_profile_id,
+                        'project_title' => trim($projectData['project_title']),
+                        'description' => $projectData['description'] ?? null,
+                        'project_link' => $projectData['project_link'] ?? null,
+                    ]);
+                    $projectIds[] = $newProject->id;
+                }
+            }
+        }
+        ItianProject::where('itian_profile_id', $itianProfile->itian_profile_id)
+            ->whereNotIn('id', $projectIds)
+            ->delete();
+    }
+
+    $itianProfile->load(['skills', 'projects']);
+    $data = $itianProfile->toArray();
+    $data['cv_url'] = $itianProfile->cv ? asset('storage/' . $itianProfile->cv) : null;
+    $data['profile_picture_url'] = $itianProfile->profile_picture ? asset('storage/' . $itianProfile->profile_picture) : null;
+
+    return response()->json([
+        'message' => 'Profile updated successfully',
+        'data' => $data
+    ]);
+}
+
     public function showProfileByUserId($user_id)
     {
         $profile = ItianProfile::with(['skills', 'projects'])
