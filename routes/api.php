@@ -27,7 +27,6 @@ Route::get('posts/{post}/reactions/details', [PostReactionController::class, 'ge
 Route::post('forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 Route::get('public-profile/{username}', [ItianProfileController::class, 'showPublic']);
-Route::get('employer-public-profile/{username}', [EmployerProfileController::class, 'showPublic']);
 
 // ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
@@ -44,12 +43,31 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
 
     // Employer Profile
-    Route::post('employer-profile', [EmployerProfileController::class, 'store']);
+   // Employer Profile
+    // // Employer Profile - Fixed Routes
+    // Route::post('employer-profile', [EmployerProfileController::class, 'store']);
+    // Route::get('employer-profile', [EmployerProfileController::class, 'show']);
+    // Route::put('employer-profile', [EmployerProfileController::class, 'update']);
+    // Route::post('employer-profile/update', [EmployerProfileController::class, 'update']);
+    // Route::delete('employer-profile', [EmployerProfileController::class, 'destroy']);
+    // // Fixed: Changed from publicShow to showPublic to match controller method
+    // Route::get('employer-profile/{username}', [EmployerProfileController::class, 'showPublic']);
+
+
+
+    
+    // Employer Profile (Authenticated user's profile)
+    Route::get('employer-public-profile/{id}', [EmployerProfileController::class, 'showPublicProfileById']);
+
+
     Route::get('employer-profile', [EmployerProfileController::class, 'show']);
-    Route::put('employer-profile', [EmployerProfileController::class, 'update']);
-    Route::post('employer-profile/update', [EmployerProfileController::class, 'update']);
+    Route::post('employer-profile', [EmployerProfileController::class, 'store']);
+    // This is the new, cleaner update route for the authenticated user
+    // Route::put('employer-profile', [EmployerProfileController::class, 'update']); // <--- ADD THIS LINE
     Route::delete('employer-profile', [EmployerProfileController::class, 'destroy']);
-    Route::get('employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
+    // This route is still useful if an admin needs to update a specific employer by user_id
+    Route::post('employer-profiles/{user_id}/update', [EmployerProfileController::class, 'update']);
+
 
     // Posts
     Route::apiResource('posts', PostController::class);
