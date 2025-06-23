@@ -15,7 +15,7 @@ class StoreEmployerProfileRequest extends FormRequest
     {
         return [
             'company_name' => 'required|string|max:255',
-            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB = 5120KB
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', 
             'company_description' => 'nullable|string',
             'website_url' => 'nullable|url|max:500',
             'industry' => 'nullable|string|max:255',
@@ -38,7 +38,12 @@ class StoreEmployerProfileRequest extends FormRequest
     }
 }
 
+// UpdateEmployerProfileRequest.php
 
+
+namespace App\Http\Requests;
+
+use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateEmployerProfileRequest extends FormRequest
 {
