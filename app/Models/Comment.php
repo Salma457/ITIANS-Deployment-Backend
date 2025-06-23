@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Post;
+use App\Models\User;
 
 class Comment extends Model
 {
@@ -35,4 +37,6 @@ class Comment extends Model
     {
         return $this->belongsTo(Comment::class, 'parent_comment_id');
     }
+
+
 }
