@@ -64,20 +64,33 @@ class PostReactionController extends Controller
     // PostReactionController.php
 public function getReactionDetails($postId)
 {
-    $reactions = PostReaction::with('user')
+    $reactions = PostReaction::with(['user', 'itianProfile', 'employerProfile'])
         ->where('post_id', $postId)
         ->get()
         ->groupBy('reaction_type')
-        ->map(function ($reactions) {
-            return $reactions->map(function ($reaction) {
+        ->map(function ($reactionGroup) {
+            return $reactionGroup->map(function ($reaction) {
+                $user = $reaction->user;
+                $name = $user->name;
+                $avatar = null;
+
+                if ($reaction->itianProfile) {
+                    $name = $reaction->itianProfile->first_name . ' ' . $reaction->itianProfile->last_name;
+                    $avatar = $reaction->itianProfile->profile_picture_url;
+                } elseif ($reaction->employerProfile) {
+                    $name = $reaction->employerProfile->company_name;
+                    $avatar = $reaction->employerProfile->company_logo_url;
+                }
+
                 return [
-                    'id' => $reaction->user->id,
-                    'name' => $reaction->user->name,
-                    'avatar' => $reaction->user->profile_picture_url
+                    'id' => $user->id,
+                    'name' => $name,
+                    'avatar' => $avatar,
                 ];
             });
         });
 
     return response()->json($reactions);
 }
+
 }
