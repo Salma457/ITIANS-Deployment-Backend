@@ -96,7 +96,7 @@ class ItianProfileController extends Controller
         return response()->json($data);
     }
 
-    public function update(Request $request, $user_id)
+   public function update(Request $request, $user_id)
 {
     $itianProfile = ItianProfile::where('user_id', $user_id)->first();
 
@@ -125,15 +125,25 @@ class ItianProfileController extends Controller
 
     // رفع الصورة
     if ($request->hasFile('profile_picture')) {
+        // حذف الصورة القديمة إذا كانت موجودة
+        if ($itianProfile->profile_picture && Storage::disk('public')->exists($itianProfile->profile_picture)) {
+            Storage::disk('public')->delete($itianProfile->profile_picture);
+        }
         $imagePath = $request->file('profile_picture')->store('profile_pictures', 'public');
         $itianProfile->profile_picture = $imagePath;
     }
 
-    // رفع الـ CV
+    // رفع السيرة الذاتية
     if ($request->hasFile('cv')) {
+        if ($itianProfile->cv && Storage::disk('public')->exists($itianProfile->cv)) {
+            Storage::disk('public')->delete($itianProfile->cv);
+        }
         $cvPath = $request->file('cv')->store('cvs', 'public');
         $itianProfile->cv = $cvPath;
     }
+
+    // حفظ التغييرات مرة واحدة بس
+    $itianProfile->save();
 
     // تحديث الـ Skills
     if ($request->has('skills')) {
@@ -141,14 +151,12 @@ class ItianProfileController extends Controller
         foreach ($request->input('skills') as $skillData) {
             if (isset($skillData['skill_name']) && !empty(trim($skillData['skill_name']))) {
                 if (isset($skillData['id'])) {
-                    // تحديث Skill موجود
                     $skill = ItianSkill::find($skillData['id']);
                     if ($skill && $skill->itian_profile_id == $itianProfile->itian_profile_id) {
                         $skill->update(['skill_name' => trim($skillData['skill_name'])]);
                         $skillIds[] = $skill->id;
                     }
                 } else {
-                    // إضافة Skill جديد
                     $newSkill = ItianSkill::create([
                         'itian_profile_id' => $itianProfile->itian_profile_id,
                         'skill_name' => trim($skillData['skill_name']),
@@ -157,7 +165,6 @@ class ItianProfileController extends Controller
                 }
             }
         }
-        // حذف الـ Skills القديمة اللي مش موجودة في الـ request
         ItianSkill::where('itian_profile_id', $itianProfile->itian_profile_id)
             ->whereNotIn('id', $skillIds)
             ->delete();
@@ -169,7 +176,6 @@ class ItianProfileController extends Controller
         foreach ($request->input('projects') as $projectData) {
             if (isset($projectData['project_title']) && !empty(trim($projectData['project_title']))) {
                 if (isset($projectData['id'])) {
-                    // تحديث Project موجود
                     $project = ItianProject::find($projectData['id']);
                     if ($project && $project->itian_profile_id == $itianProfile->itian_profile_id) {
                         $project->update([
@@ -180,7 +186,6 @@ class ItianProfileController extends Controller
                         $projectIds[] = $project->id;
                     }
                 } else {
-                    // إضافة Project جديد
                     $newProject = ItianProject::create([
                         'itian_profile_id' => $itianProfile->itian_profile_id,
                         'project_title' => trim($projectData['project_title']),
@@ -196,7 +201,10 @@ class ItianProfileController extends Controller
             ->delete();
     }
 
+    // تحديث العلاقات وإعادة البيانات
+    $itianProfile->refresh(); // هنا مهم عشان نجيب البيانات المحدثة
     $itianProfile->load(['skills', 'projects']);
+    
     $data = $itianProfile->toArray();
     $data['cv_url'] = $itianProfile->cv ? asset('storage/' . $itianProfile->cv) : null;
     $data['profile_picture_url'] = $itianProfile->profile_picture ? asset('storage/' . $itianProfile->profile_picture) : null;
@@ -206,6 +214,8 @@ class ItianProfileController extends Controller
         'data' => $data
     ]);
 }
+
+
 
     public function showProfileByUserId($user_id)
     {
