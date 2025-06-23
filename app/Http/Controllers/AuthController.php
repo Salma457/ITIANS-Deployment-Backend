@@ -16,7 +16,12 @@ class AuthController extends Controller
     public function register(RegisterRequest $request)
     {
 
-        $user = User::create($request->all());
+        $uuid = $request->input('uuid');
+
+        $user = User::create(array_merge(
+            $request->all(),
+            ['uuid' => $uuid] // اربط اليوزر بالـ UUID بتاع Supabase
+        ));
 
         $token = $user->createToken('auth_token')->plainTextToken;
         if ($request->hasFile('certificate')) {
