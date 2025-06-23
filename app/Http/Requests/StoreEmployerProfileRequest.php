@@ -56,7 +56,7 @@ class UpdateEmployerProfileRequest extends FormRequest
     {
         return [
             'company_name' => 'sometimes|string|max:255',
-            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', // 5MB = 5120KB
+            'company_logo' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120', 
             'company_description' => 'nullable|string',
             'website_url' => 'nullable|url|max:500',
             'industry' => 'sometimes|string|max:255',
@@ -66,7 +66,7 @@ class UpdateEmployerProfileRequest extends FormRequest
             'contact_email' => 'nullable|email|max:255',
             'phone_number' => 'nullable|string|max:20',
             'is_verified' => 'nullable|boolean',
-            'company_logo_removed' => 'nullable|string', // للـ logo removal
+            'company_logo_removed' => 'nullable|string',
         ];
     }
 

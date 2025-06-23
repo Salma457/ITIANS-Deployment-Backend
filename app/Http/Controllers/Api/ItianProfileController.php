@@ -104,7 +104,6 @@ class ItianProfileController extends Controller
         return response()->json(['message' => 'Profile not found'], 404);
     }
 
-    // تحديث البيانات الأساسية
     $itianProfile->update([
         'first_name' => $request->input('first_name'),
         'last_name' => $request->input('last_name'),
@@ -123,9 +122,7 @@ class ItianProfileController extends Controller
         'number' => $request->input('number'),
     ]);
 
-    // رفع الصورة
     if ($request->hasFile('profile_picture')) {
-        // حذف الصورة القديمة إذا كانت موجودة
         if ($itianProfile->profile_picture && Storage::disk('public')->exists($itianProfile->profile_picture)) {
             Storage::disk('public')->delete($itianProfile->profile_picture);
         }
@@ -133,7 +130,6 @@ class ItianProfileController extends Controller
         $itianProfile->profile_picture = $imagePath;
     }
 
-    // رفع السيرة الذاتية
     if ($request->hasFile('cv')) {
         if ($itianProfile->cv && Storage::disk('public')->exists($itianProfile->cv)) {
             Storage::disk('public')->delete($itianProfile->cv);
@@ -142,10 +138,8 @@ class ItianProfileController extends Controller
         $itianProfile->cv = $cvPath;
     }
 
-    // حفظ التغييرات مرة واحدة بس
     $itianProfile->save();
 
-    // تحديث الـ Skills
     if ($request->has('skills')) {
         $skillIds = [];
         foreach ($request->input('skills') as $skillData) {
@@ -201,8 +195,7 @@ class ItianProfileController extends Controller
             ->delete();
     }
 
-    // تحديث العلاقات وإعادة البيانات
-    $itianProfile->refresh(); // هنا مهم عشان نجيب البيانات المحدثة
+    $itianProfile->refresh();
     $itianProfile->load(['skills', 'projects']);
     
     $data = $itianProfile->toArray();

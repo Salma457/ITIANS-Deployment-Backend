@@ -43,24 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('itian-profile', [ItianProfileController::class, 'destroy']);
     Route::get('itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
 
-    // Employer Profile
-   // Employer Profile
-    // // Employer Profile - Fixed Routes
-    // Route::post('employer-profile', [EmployerProfileController::class, 'store']);
-    // Route::get('employer-profile', [EmployerProfileController::class, 'show']);
-    // Route::put('employer-profile', [EmployerProfileController::class, 'update']);
-    // Route::post('employer-profile/update', [EmployerProfileController::class, 'update']);
-    // Route::delete('employer-profile', [EmployerProfileController::class, 'destroy']);
-    // // Fixed: Changed from publicShow to showPublic to match controller method
-    // Route::get('employer-profile/{username}', [EmployerProfileController::class, 'showPublic']);
 
-
-
-    
     // Employer Profile (Authenticated user's profile)
     Route::get('employer-public-profile/{id}', [EmployerProfileController::class, 'showPublicProfileById']);
-
-
     Route::get('employer-profile', [EmployerProfileController::class, 'show']);
     Route::post('employer-profile', [EmployerProfileController::class, 'store']);
     // This is the new, cleaner update route for the authenticated user

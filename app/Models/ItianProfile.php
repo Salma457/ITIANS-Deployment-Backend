@@ -53,13 +53,11 @@ public function user()
         return $this->hasMany(JobApplication::class, 'itian_id', 'itian_profile_id');
     }
 
-    // ✅ علاقات المشاريع
     public function projects()
     {
         return $this->hasMany(ItianProject::class, 'itian_profile_id', 'itian_profile_id');
     }
 
-    // ✅ علاقات المهارات
     public function skills()
     {
         return $this->hasMany(ItianSkill::class, 'itian_profile_id', 'itian_profile_id');

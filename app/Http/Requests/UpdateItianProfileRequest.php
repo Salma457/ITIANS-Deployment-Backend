@@ -8,7 +8,7 @@ class UpdateItianProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // لو محتاجة تحكمي الوصول عدليها هنا
+        return true; 
     }
 
     public function rules(): array
