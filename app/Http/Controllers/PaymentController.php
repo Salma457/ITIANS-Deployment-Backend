@@ -7,17 +7,21 @@ use Stripe\Stripe;
 use Stripe\Checkout\Session;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\JobPricing; 
 class PaymentController extends Controller
 {
+
+
 public function createCheckoutSession(Request $request)
 {
     $user = Auth::user();
-
     Stripe::setApiKey(env('STRIPE_SECRET'));
 
-    
-    $amount = 300; 
+    // ❗ الحصول على السعر من قاعدة البيانات
+    $pricing = JobPricing::latest()->first();
+    $amountInDollars = $pricing ? $pricing->price : 3.00; // fallback للسعر القديم لو مفيش قيمة
+    $amount = $amountInDollars * 100; // لتحويله لـ سنتات
+
     $currency = 'usd';
 
     $session = Session::create([
@@ -26,7 +30,7 @@ public function createCheckoutSession(Request $request)
             'price_data' => [
                 'currency' => $currency,
                 'product_data' => ['name' => 'Add New Job'],
-                'unit_amount' => $amount,
+                'unit_amount' => (int)$amount,
             ],
             'quantity' => 1,
         ]],
@@ -36,19 +40,18 @@ public function createCheckoutSession(Request $request)
         'metadata' => ['user_id' => $user->id],
     ]);
 
-   
     Payment::create([
         'user_id' => $user->id,
-        
         'stripe_session_id' => $session->id,
         'stripe_payment_intent_id' => $session->payment_intent,
-        'amount' => $amount / 100, 
+        'amount' => $amountInDollars,
         'currency' => $currency,
         'used_for_job' => false,
     ]);
 
     return response()->json(['url' => $session->url]);
 }
+
 
 
 
