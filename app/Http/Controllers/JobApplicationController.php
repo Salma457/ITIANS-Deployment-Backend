@@ -47,7 +47,6 @@ class JobApplicationController extends Controller
     public function store(Request $request)
     {
         try {
-            // التحقق من المصادقة
             if (!Auth::check()) {
                 return response()->json([
                     'success' => false,
@@ -55,7 +54,6 @@ class JobApplicationController extends Controller
                 ], 401);
             }
 
-            // التحقق من وجود ملف السيرة الذاتية
             if (!$request->hasFile('cv')) {
                 return response()->json([
                     'success' => false,
@@ -63,7 +61,6 @@ class JobApplicationController extends Controller
                 ], 422);
             }
 
-            // التحقق من صحة الملف
             $validator = Validator::make($request->all(), [
                 'job_id' => 'required|exists:jobs,id',
                 'cover_letter' => 'required|string',
@@ -77,7 +74,6 @@ class JobApplicationController extends Controller
                 ], 422);
             }
 
-            // البحث عن ملف تعريف ITIAN
             $itianProfile = ItianProfile::where('user_id', Auth::id())->first();
 
             if (!$itianProfile) {
@@ -87,7 +83,6 @@ class JobApplicationController extends Controller
                 ], 403);
             }
 
-            // تخزين الملف
             $storedPath = $request->file('cv')->store('job_applications', 'public');
 
             $jobApplication = JobApplication::create([
@@ -118,6 +113,7 @@ class JobApplicationController extends Controller
                         'type' => 'application',
                         'seen' => false,
                         'job_id' => $job->id,
+                        'created_at' => now()
                     ]
                 ]);
 
@@ -137,11 +133,10 @@ class JobApplicationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Server error occurred.',
-                'error' => $e->getMessage() // في البيئة الانتاجية، أزل هذا السطر
+                'error' => $e->getMessage() 
             ], 500);
         }
     }
-    // get all employer's applications for all jobs
     public function getEmployerAllJobApplications()
     {
         try{
@@ -158,7 +153,6 @@ class JobApplicationController extends Controller
             ], 500);
         }
     }
-    // get all Itian job applications
     public function index()
     {
         try {
@@ -178,7 +172,6 @@ class JobApplicationController extends Controller
         }
     }
 
-    // show job application by Id
    public function show($id)
     {
         try {
@@ -233,6 +226,8 @@ class JobApplicationController extends Controller
                             'type' => 'system',
                             'seen' => false,
                             'job_id' => $application->job->id,
+                            'created_at' => now()
+
                         ]);
                         \Log::info('Employer user ID: ' . $employerUserId);
 
@@ -292,7 +287,9 @@ class JobApplicationController extends Controller
 
             return response()->json([
                 'hasApplied' => $application ? true : false,
-                'applicationId' => $application ? $application->id : null
+                'applicationId' => $application ? $application->id : null,
+                'status' => $application->status,
+
             ]);
         } catch (\Exception $e) {
             return response()->json([
