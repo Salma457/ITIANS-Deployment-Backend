@@ -15,6 +15,11 @@ use App\Http\Controllers\Auth\PasswordResetController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReportController;
+// use App\Services\RagEmbedderService;
+use Illuminate\Http\Request;
+use App\Http\Controllers\RagController;
+
+
 
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
@@ -143,3 +148,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
     });
 });
+//Rag Routes
+Route::prefix('rag')->group(function () {
+    Route::get('/embed/posts', [RagController::class, 'embedPosts']);
+    Route::get('/embed/jobs', [RagController::class, 'embedJobs']);
+    Route::get('/search', [RagController::class, 'search']);
+    Route::get('/ask', [RagController::class, 'ask']);
+});
+// Route::get('/test-openai', function () {
+//     $response = Http::withHeaders([
+//         'Authorization' => 'Bearer ' . config('services.openai.key'),
+//         'Content-Type' => 'application/json',
+//     ])->post('https://api.openai.com/v1/chat/completions', [
+//         'model' => 'o1-mini',
+//         'messages' => [
+//             ['role' => 'user', 'content' => 'مرحبا، من أنت؟']
+//         ],
+//     ]);
+
+//     return $response->json();
+// });
+
