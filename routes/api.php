@@ -116,6 +116,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('reports/{id}', [ReportController::class, 'destroy']);
     Route::put('reports/{id}/status', [ReportController::class, 'updateStatus']);
 
+        // ------------------- Notification Routes -------------------
+
+    Route::get('/my-notifications', [NotificationController::class, 'index']);
+    Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAllNotifications']);
+
     // Chat
     Route::prefix('mychat')->group(function () {
         Route::post('chat/auth', [CustomChatController::class, 'pusherAuth']);
@@ -133,6 +138,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
     });
+});
 
     // ------------------- Admin Routes -------------------
     Route::middleware('admin')->group(function () {
@@ -153,25 +159,24 @@ Route::middleware('auth:sanctum')->group(function () {
     });
     Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
 
-    //------------------- Notification-------------------
-Route::get('/my-notifications', [NotificationController::class, 'index']);
-});
-Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
+ 
+
+    Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
 //comments
 // anyone can view comments
-Route::get('posts/{post}/comments', [CommentController::class, 'index']);
+    Route::get('posts/{post}/comments', [CommentController::class, 'index']);
 
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
     Route::post('posts/{post}/comments', [CommentController::class, 'store']);
     Route::put('comments/{comment}', [CommentController::class, 'update']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
 });
 // Route::post('/create-payment-intent', [PaymentController::class, 'createIntent']);
-Route::middleware('auth:sanctum')->group(function () {
+    Route::middleware('auth:sanctum')->group(function () {
     Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
 });
-Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
+    Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
 
 
