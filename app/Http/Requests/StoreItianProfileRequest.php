@@ -20,7 +20,7 @@ class StoreItianProfileRequest extends FormRequest
             'bio' => 'nullable|string',
             'iti_track' => 'required|string|max:100',
             'graduation_year' => 'required|integer',
-            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:2048',
+            'cv' => 'nullable|mimes:pdf,doc,docx|max:2048',
             'portfolio_url' => 'nullable|url|max:500',
             'linkedin_profile_url' => 'nullable|url|max:500',
             'github_profile_url' => 'nullable|url|max:500',

@@ -8,7 +8,7 @@ class UpdateItianProfileRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // لو محتاجة تحكمي الوصول عدليها هنا
+        return true; 
     }
 
     public function rules(): array
@@ -20,7 +20,7 @@ class UpdateItianProfileRequest extends FormRequest
             'bio' => 'nullable|string',
             'iti_track' => 'sometimes|string|max:100',
             'graduation_year' => 'sometimes|integer',
-            'cv' => 'nullable|file|mimes:pdf,doc,docx|max:4096',
+            'cv' => 'nullable|mimes:pdf,doc,docx|max:4096',
             'portfolio_url' => 'nullable|url|max:500',
             'linkedin_profile_url' => 'nullable|url|max:500',
             'github_profile_url' => 'nullable|url|max:500',
