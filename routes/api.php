@@ -17,7 +17,7 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReportController;
-
+use App\Http\Controllers\AdminController;
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -43,24 +43,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('itian-profile', [ItianProfileController::class, 'destroy']);
     Route::get('itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
 
-    // Employer Profile
-   // Employer Profile
-    // // Employer Profile - Fixed Routes
-    // Route::post('employer-profile', [EmployerProfileController::class, 'store']);
-    // Route::get('employer-profile', [EmployerProfileController::class, 'show']);
-    // Route::put('employer-profile', [EmployerProfileController::class, 'update']);
-    // Route::post('employer-profile/update', [EmployerProfileController::class, 'update']);
-    // Route::delete('employer-profile', [EmployerProfileController::class, 'destroy']);
-    // // Fixed: Changed from publicShow to showPublic to match controller method
-    // Route::get('employer-profile/{username}', [EmployerProfileController::class, 'showPublic']);
 
-
-
-    
     // Employer Profile (Authenticated user's profile)
     Route::get('employer-public-profile/{id}', [EmployerProfileController::class, 'showPublicProfileById']);
-
-
     Route::get('employer-profile', [EmployerProfileController::class, 'show']);
     Route::post('employer-profile', [EmployerProfileController::class, 'store']);
     // This is the new, cleaner update route for the authenticated user
@@ -161,7 +146,12 @@ Route::middleware('auth:sanctum')->group(function () {
         // Itian Registration Requests
         Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
         Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
+     Route::get('/admin/job-pricing', [AdminController::class, 'showPricing']);
+    // Route::post('/admin/job-pricing', [AdminController::class, 'updatePricing']);
+    Route::post('/set-job-price', [AdminController::class, 'updatePricing']);
+  
     });
+    Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
 
     //------------------- Notification-------------------
 Route::get('/my-notifications', [NotificationController::class, 'index']);

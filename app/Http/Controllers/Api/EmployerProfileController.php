@@ -27,7 +27,10 @@ class EmployerProfileController extends Controller
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {
-            $data['company_logo'] = $request->file('company_logo')->store('company_logos', 'public');
+            $file = $request->file('company_logo');
+            Log::info('Uploading file: ' . $file->getClientOriginalName() . ', Type: ' . $file->getMimeType());
+            
+            $data['company_logo'] = $file->store('company_logos', 'public');
         }
 
         $profile = $user->employerProfile()->create($data);
@@ -57,47 +60,60 @@ class EmployerProfileController extends Controller
         return response()->json($data);
     }
 
-   public function update(UpdateEmployerProfileRequest $request, $user_id)
-{
-    $employerProfile = EmployerProfile::where('user_id', $user_id)->first();
+    public function update(UpdateEmployerProfileRequest $request, $user_id)
+    {
+        $employerProfile = EmployerProfile::where('user_id', $user_id)->first();
 
-    if (!$employerProfile) {
-        return response()->json(['message' => 'Employer profile not found'], 404);
-    }
-
-    Log::info('Received update data for user_id ' . $user_id . ':', $request->all()); // Debug log
-
-    // Handle company logo upload
-    if ($request->hasFile('company_logo')) {
-        if ($employerProfile->company_logo) {
-            Storage::disk('public')->delete($employerProfile->company_logo);
+        if (!$employerProfile) {
+            return response()->json(['message' => 'Employer profile not found'], 404);
         }
-        $employerProfile->company_logo = $request->file('company_logo')->store('company_logos', 'public');
-    } elseif ($request->input('company_logo_removed')) {
-        if ($employerProfile->company_logo) {
-            Storage::disk('public')->delete($employerProfile->company_logo);
-            $employerProfile->company_logo = null;
+
+        Log::info('Received update data for user_id ' . $user_id . ':', $request->all());
+        Log::info('Has file: ' . ($request->hasFile('company_logo') ? 'Yes' : 'No'));
+        
+        if ($request->hasFile('company_logo')) {
+            $file = $request->file('company_logo');
+            Log::info('File details: Name=' . $file->getClientOriginalName() . ', Type=' . $file->getMimeType() . ', Size=' . $file->getSize());
         }
+
+        $data = $request->validated();
+
+        // Handle company logo upload
+        if ($request->hasFile('company_logo')) {
+            // Delete old logo if exists
+            if ($employerProfile->company_logo) {
+                Storage::disk('public')->delete($employerProfile->company_logo);
+            }
+            
+            $file = $request->file('company_logo');
+            $data['company_logo'] = $file->store('company_logos', 'public');
+            Log::info('New logo stored at: ' . $data['company_logo']);
+            
+        } elseif ($request->input('company_logo_removed') === 'true') {
+            // Remove logo if requested
+            if ($employerProfile->company_logo) {
+                Storage::disk('public')->delete($employerProfile->company_logo);
+                $data['company_logo'] = null;
+            }
+        }
+
+        // Update the profile
+        $updated = $employerProfile->update($data);
+
+        if (!$updated) {
+            Log::error('Update failed for employer profile ID: ' . $employerProfile->id);
+            return response()->json(['message' => 'Failed to update profile'], 500);
+        }
+
+        $employerProfile->refresh();
+        $responseData = $employerProfile->toArray();
+        $responseData['company_logo_url'] = $employerProfile->company_logo ? asset('storage/' . $employerProfile->company_logo) : null;
+
+        return response()->json([
+            'message' => 'Employer profile updated successfully',
+            'data' => $responseData
+        ]);
     }
-
-    // Update validated data
-    $data = $request->validated();
-    $updated = $employerProfile->update($data);
-
-    if (!$updated) {
-        Log::error('Update failed for employer profile ID: ' . $employerProfile->id);
-        return response()->json(['message' => 'Failed to update profile'], 500);
-    }
-
-    $employerProfile->refresh();
-    $data = $employerProfile->toArray();
-    $data['company_logo_url'] = $employerProfile->company_logo ? asset('storage/' . $employerProfile->company_logo) : null;
-
-    return response()->json([
-        'message' => 'Employer profile updated successfully',
-        'data' => $data
-    ]);
-}
 
     public function destroy()
     {
@@ -117,19 +133,19 @@ class EmployerProfileController extends Controller
     }
 
     public function showPublicProfileById($id)
-{
-    $profile = EmployerProfile::where('user_id', $id)->first();
+    {
+        $profile = EmployerProfile::where('user_id', $id)->first();
 
-    if (!$profile) {
-        return response()->json(['message' => 'Employer profile not found'], 404);
+        if (!$profile) {
+            return response()->json(['message' => 'Employer profile not found'], 404);
+        }
+
+        $data = $profile->toArray();
+        $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
+
+        return response()->json([
+            'message' => 'Employer profile data retrieved successfully',
+            'data' => $data
+        ]);
     }
-
-    $data = $profile->toArray();
-    $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
-
-    return response()->json([
-        'message' => 'Employer profile data retrieved successfully',
-        'data' => $data
-    ]);
-}
 }
