@@ -90,7 +90,6 @@ class JobApplicationController extends Controller
             // تخزين الملف
             $storedPath = $request->file('cv')->store('job_applications', 'public');
 
-            // إنشاء طلب الوظيفة
             $jobApplication = JobApplication::create([
                 'job_id' => $request->job_id,
                 'itian_id' => $itianProfile->itian_profile_id,
@@ -99,6 +98,33 @@ class JobApplicationController extends Controller
                 'application_date' => now(),
                 'status' => 'pending'
             ]);
+            $job = Job::find($request->job_id);
+            $employerUserId = $job?->employer_id; 
+            \Log::info('Employer user ID: ' . $employerUserId);
+            if ($employerUserId) {
+                try {
+                   $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('SUPABASE_SERVICE_ROLE_KEY'), // استخدم SERVICE_ROLE_KEY وليس ANON_KEY هنا لو تقدر
+                    'apikey' => env('SUPABASE_ANON_KEY'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->post('https://obrhuhasrppixjwkznri.supabase.co/rest/v1/notifications', [
+                    [
+                        'user_id' => $employerUserId,
+                        'title' => 'New Job Application',
+                        'message' => 'Someone applied for your job: ' . $job->title,
+                        'notifiable_type' => 'App\\Models\\User',
+                        'notifiable_id' => $employerUserId,
+                        'type' => 'application',
+                        'seen' => false,
+                        'job_id' => $job->id,
+                    ]
+                ]);
+
+                } catch (\Exception $e) {
+                    \Log::error('Employer notification failed: ' . $e->getMessage());
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -208,6 +234,7 @@ class JobApplicationController extends Controller
                             'seen' => false,
                             'job_id' => $application->job->id,
                         ]);
+                        \Log::info('Employer user ID: ' . $employerUserId);
 
                         } elseif ($request->status === 'rejected') {
                             Mail::to($email)->send(new RegistrationRequestRejected($application));
