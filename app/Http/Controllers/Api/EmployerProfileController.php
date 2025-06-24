@@ -4,9 +4,8 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmployerProfileRequest;
-use App\Http\Requests\UpdateEmployerProfileRequest; // تأكد من استيرادها
+use App\Http\Requests\UpdateEmployerProfileRequest;
 use App\Models\EmployerProfile;
-use App\Models\User; // تأكد من استيرادها لاستخدامها في showPublic
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -14,16 +13,14 @@ use Illuminate\Support\Facades\Log;
 
 class EmployerProfileController extends Controller
 {
-    /**
-     * Store a newly created employer profile.
-     */
     public function store(StoreEmployerProfileRequest $request)
     {
         $user = auth()->user();
 
-        // Check if an employer profile already exists for this user
         if ($user->employerProfile) {
-            return response()->json(['message' => 'Employer profile already exists for this user.'], 409);
+            return response()->json([
+                'message' => 'Employer profile already exists'
+            ], 409);
         }
 
         $data = $request->validated();
@@ -33,106 +30,90 @@ class EmployerProfileController extends Controller
             $data['company_logo'] = $request->file('company_logo')->store('company_logos', 'public');
         }
 
-        $data['user_id'] = $user->id; // Associate with the authenticated user
-
-        $profile = EmployerProfile::create($data);
-
-        // Prepare response data, including the full URL for the logo
-        $profileData = $profile->toArray();
-        $profileData['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
-
-        $this->cleanResponseFields($profileData); // Clean sensitive/unnecessary fields
+        $profile = $user->employerProfile()->create($data);
 
         return response()->json([
-            'message' => 'Employer profile created successfully.',
-            'data' => $profileData,
+            'message' => 'Employer profile created successfully',
+            'data' => [
+                'profile' => $profile,
+                'company_logo_url' => isset($data['company_logo']) ? asset('storage/' . $data['company_logo']) : null,
+            ]
         ], 201);
     }
 
-    /**
-     * Display the authenticated user's employer profile.
-     */
-    public function show()
+    public function show(Request $request)
     {
-        $profile = Auth::user()->employerProfile;
+        $user = Auth::user();
+
+        $profile = EmployerProfile::where('user_id', $user->id)->first();
 
         if (!$profile) {
-            return response()->json(['message' => 'Employer profile not found for this user.'], 404);
+            return response()->json(['message' => 'Employer profile not found'], 404);
         }
 
         $data = $profile->toArray();
         $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
 
-        $this->cleanResponseFields($data);
-
-        return response()->json(['data' => $data]);
+        return response()->json($data);
     }
 
-    /**
-     * Update the authenticated user's employer profile.
-     */
-    public function update(UpdateEmployerProfileRequest $request)
+    public function update(UpdateEmployerProfileRequest $request, $user_id)
     {
-        $user = Auth::user();
-        $employerProfile = $user->employerProfile;
+        $employerProfile = EmployerProfile::where('user_id', $user_id)->first();
 
         if (!$employerProfile) {
-            return response()->json(['message' => 'Employer profile not found for this user.'], 404);
+            return response()->json(['message' => 'Employer profile not found'], 404);
         }
 
-        $data = $request->validated();
+        Log::info('Received update data for user_id ' . $user_id . ':', $request->all()); // Debug log
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {
-            // Delete old logo if it exists
             if ($employerProfile->company_logo) {
                 Storage::disk('public')->delete($employerProfile->company_logo);
             }
-            $data['company_logo'] = $request->file('company_logo')->store('company_logos', 'public');
-        } elseif ($request->has('company_logo') && $request->input('company_logo') === null) {
-            // If 'company_logo' is explicitly sent as null/empty string, it means delete the old one
+            $employerProfile->company_logo = $request->file('company_logo')->store('company_logos', 'public');
+        } elseif ($request->input('company_logo_removed')) {
             if ($employerProfile->company_logo) {
                 Storage::disk('public')->delete($employerProfile->company_logo);
+                $employerProfile->company_logo = null;
             }
-            $data['company_logo'] = null; // Set to null in DB
         }
 
+        // Update validated data
+        $data = $request->validated();
+        $updated = $employerProfile->update($data);
 
-        $employerProfile->update($data);
+        if (!$updated) {
+            Log::error('Update failed for employer profile ID: ' . $employerProfile->id);
+            return response()->json(['message' => 'Failed to update profile'], 500);
+        }
 
-        // Reload the profile to get the latest data, especially for accessors like company_logo_url
         $employerProfile->refresh();
-
-        $profileData = $employerProfile->toArray();
-        $profileData['company_logo_url'] = $employerProfile->company_logo ? asset('storage/' . $employerProfile->company_logo) : null;
-
-        $this->cleanResponseFields($profileData);
+        $data = $employerProfile->toArray();
+        $data['company_logo_url'] = $employerProfile->company_logo ? asset('storage/' . $employerProfile->company_logo) : null;
 
         return response()->json([
-            'message' => 'Employer profile updated successfully!',
-            'data' => $profileData,
-        ], 200);
+            'message' => 'Employer profile updated successfully',
+            'data' => $data
+        ]);
     }
 
-    /**
-     * Remove the authenticated user's employer profile.
-     */
     public function destroy()
     {
         $profile = Auth::user()->employerProfile;
 
         if (!$profile) {
-            return response()->json(['message' => 'Employer profile not found.'], 404);
+            return response()->json(['message' => 'Employer profile not found'], 404);
         }
 
-        // Delete company logo if it exists
         if ($profile->company_logo) {
             Storage::disk('public')->delete($profile->company_logo);
         }
 
         $profile->delete();
 
-        return response()->json(['message' => 'Employer profile deleted successfully.']);
+        return response()->json(['message' => 'Employer profile deleted']);
     }
 
     /**
@@ -141,24 +122,18 @@ class EmployerProfileController extends Controller
     public function publicShow(Request $request, $id)
     {
         try {
-            // Find the user by name and eager load their employer profile
-            $user = EmployerProfile::where('user_id', $id)->first();
-            if (!$user || !$user->employerProfile) {
+            $profile = EmployerProfile::where('user_id', $id)->first();
+            if (!$profile) {
                 return response()->json(['message' => 'Employer profile not found.'], 404);
             }
-
-            $profile = $user->employerProfile;
-
+            $user = $profile->user ?? null;
             $data = $profile->toArray();
-            // Add user-related data
-            $data['name'] = $user->name;
-            $data['email'] = $user->email; // Or any other public user data
-
-            // Add full URL for the company logo
+            $data['name'] = $user ? $user->name : null;
+            $data['email'] = $user ? $user->email : null;
             $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
-
-            $this->cleanResponseFields($data);
-
+            if (method_exists($this, 'cleanResponseFields')) {
+                $this->cleanResponseFields($data);
+            }
             return response()->json(['data' => $data]);
         } catch (\Exception $e) {
             Log::error('Error fetching public employer profile for user ID ' . $id . ': ' . $e->getMessage());
@@ -166,21 +141,14 @@ class EmployerProfileController extends Controller
         }
     }
 
-    /**
-     * Cleans sensitive or unnecessary fields from the response data.
-     *
-     * @param array $data
-     * @return void
-     */
-    private function cleanResponseFields(array &$data): void
+    public function showPublicProfileById($id)
     {
-        // Remove fields that should not be exposed or are redundant after processing
-        unset($data['user_id']);
-        unset($data['created_at']);
-        unset($data['updated_at']);
-        // If 'company_logo' raw path is not needed in frontend, unset it too
-        // unset($data['company_logo']);
-
+        $profile = EmployerProfile::where('user_id', $id)->first();
+        if (!$profile) {
+            return response()->json(['message' => 'Employer profile not found'], 404);
+        }
+        $data = $profile->toArray();
+        $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
         // Trim and strip slashes from string fields
         $fieldsToClean = [
             'company_name',
@@ -191,13 +159,16 @@ class EmployerProfileController extends Controller
             'location',
             'contact_person_name',
             'contact_email',
-            'phone_number'
+            'phone_number',
         ];
-
         foreach ($fieldsToClean as $field) {
             if (isset($data[$field]) && is_string($data[$field])) {
                 $data[$field] = stripslashes(trim($data[$field], "\"' "));
             }
         }
+        return response()->json([
+            'message' => 'Employer profile data retrieved successfully',
+            'data' => $data
+        ]);
     }
 }

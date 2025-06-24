@@ -3,6 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ItianProfile;
+use App\Models\EmployerProfile;
+
 
 class PostReaction extends Model
 {
@@ -17,4 +20,14 @@ class PostReaction extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function itianProfile()
+{
+    return $this->hasOne(ItianProfile::class, 'user_id', 'user_id');
+}
+
+public function employerProfile()
+{
+    return $this->hasOne(EmployerProfile::class, 'user_id', 'user_id');
+}
+
 }
