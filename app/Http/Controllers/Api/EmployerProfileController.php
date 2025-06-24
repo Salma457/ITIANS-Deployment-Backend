@@ -138,12 +138,11 @@ class EmployerProfileController extends Controller
     /**
      * Display a public employer profile by username.
      */
-    public function showPublic($username)
+    public function publicShow(Request $request, $id)
     {
         try {
-            // Find the user by username and eager load their employer profile
-            $user = User::where('username', $username)->with('employerProfile')->first();
-
+            // Find the user by name and eager load their employer profile
+            $user = EmployerProfile::where('user_id', $id)->first();
             if (!$user || !$user->employerProfile) {
                 return response()->json(['message' => 'Employer profile not found.'], 404);
             }
@@ -152,7 +151,7 @@ class EmployerProfileController extends Controller
 
             $data = $profile->toArray();
             // Add user-related data
-            $data['username'] = $user->username;
+            $data['name'] = $user->name;
             $data['email'] = $user->email; // Or any other public user data
 
             // Add full URL for the company logo
@@ -162,7 +161,7 @@ class EmployerProfileController extends Controller
 
             return response()->json(['data' => $data]);
         } catch (\Exception $e) {
-            Log::error('Error fetching public employer profile for username ' . $username . ': ' . $e->getMessage());
+            Log::error('Error fetching public employer profile for user ID ' . $id . ': ' . $e->getMessage());
             return response()->json(['message' => 'Server error occurred.'], 500);
         }
     }

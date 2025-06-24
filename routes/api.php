@@ -137,6 +137,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
         Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
         Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
+        Route::get('user', [UserManagementController::class, 'getUserData']);
 
         // Itian Registration Requests
         Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
