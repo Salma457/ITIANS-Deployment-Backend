@@ -13,7 +13,7 @@ class NotificationController extends Controller
     try {
         $user = $request->user();
 
-        if ($user->role !== 'itian') {
+        if ($user->role !== 'itian' && $user->role !== 'employer' ) {
             return response()->json(['error' => 'Unauthorized'], 403);
         }
 
