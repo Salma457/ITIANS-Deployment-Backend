@@ -163,8 +163,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
     Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
-    
-    
+
+
 
 });
 // RAG
