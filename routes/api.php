@@ -138,6 +138,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('deleteConversation', [CustomChatController::class, 'deleteConversation']);
         Route::post('updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
+        Route::post('updateMessage', [CustomChatController::class, 'updateMessage']);
+
     });
 
     // Admin Routes
