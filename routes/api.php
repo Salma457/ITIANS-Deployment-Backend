@@ -111,10 +111,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('itian-registration-requests', [ItianRegistrationRequestController::class, 'index']);
 
     // Reports
-    Route::get('reports', [ReportController::class, 'index']);
-    Route::post('reports', [ReportController::class, 'store']);
-    Route::delete('reports/{id}', [ReportController::class, 'destroy']);
-    Route::put('reports/{id}/status', [ReportController::class, 'updateStatus']);
+   Route::get('/reports', [ReportController::class, 'index']); // For admin to view all reports with filters/pagination
+    Route::post('/reports', [ReportController::class, 'store']); // For users to create reports
+    Route::get('/reports/{id}', [ReportController::class, 'show']); // To view a single report
+    Route::patch('/reports/{id}/status', [ReportController::class, 'updateStatus']); // For admin to update report status
+    Route::delete('/reports/{id}', [ReportController::class, 'destroy']); // For admin to delete reports (or user to delete their own if logic allows)
+    Route::get('/my-reports', [ReportController::class, 'myReports']); // New route for user to view their own reports
 
     // Chat
     Route::prefix('mychat')->group(function () {
