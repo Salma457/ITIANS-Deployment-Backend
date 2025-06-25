@@ -147,14 +147,16 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
         Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
     });
-});
-//Rag Routes
+
+    //Rag Routes
 Route::prefix('rag')->group(function () {
     Route::get('/embed/posts', [RagController::class, 'embedPosts']);
     Route::get('/embed/jobs', [RagController::class, 'embedJobs']);
     Route::get('/search', [RagController::class, 'search']);
     Route::get('/ask', [RagController::class, 'ask']);
 });
+});
+
 // Route::get('/test-openai', function () {
 //     $response = Http::withHeaders([
 //         'Authorization' => 'Bearer ' . config('services.openai.key'),
