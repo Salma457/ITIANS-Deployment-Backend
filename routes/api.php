@@ -31,7 +31,7 @@ Route::get('public-profile/{username}', [ItianProfileController::class, 'showPub
 
 // ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth
+        // Auth
     Route::get('logout', [AuthController::class, 'logout']);
 
     // Itian Profile
@@ -138,53 +138,48 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('updateSettings', [CustomChatController::class, 'updateSettings']);
         Route::post('setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
     });
-});
+
 
     // ------------------- Admin Routes -------------------
     Route::middleware('admin')->group(function () {
-        // User Management
-        Route::get('users', [UserManagementController::class, 'allUsers']);
-        Route::get('users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
-        Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
-        Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
-        Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
+            // User Management
+            Route::get('users', [UserManagementController::class, 'allUsers']);
+            Route::get('users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
+            Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
+            Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
+            Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
 
-        // Itian Registration Requests
-        Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
-        Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
-     Route::get('/admin/job-pricing', [AdminController::class, 'showPricing']);
-    // Route::post('/admin/job-pricing', [AdminController::class, 'updatePricing']);
-    Route::post('/set-job-price', [AdminController::class, 'updatePricing']);
-  
+            // Itian Registration Requests
+            Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
+            Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
+            Route::get('/admin/job-pricing', [AdminController::class, 'showPricing']);
+            // Route::post('/admin/job-pricing', [AdminController::class, 'updatePricing']);
+            Route::post('/set-job-price', [AdminController::class, 'updatePricing']);
+            Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
+
     });
-    Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
 
- 
-
-    Route::middleware('auth:sanctum')->get('/myposts', [PostController::class, 'myPosts']);
-//comments
-// anyone can view comments
+    Route::get('/myposts', [PostController::class, 'myPosts']);
+    // anyone can view comments
     Route::get('posts/{post}/comments', [CommentController::class, 'index']);
 
-    Route::middleware('auth:sanctum')->group(function () {
+    Route::group(function () {
     Route::post('posts/{post}/comments', [CommentController::class, 'store']);
     Route::put('comments/{comment}', [CommentController::class, 'update']);
     Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
-});
-// Route::post('/create-payment-intent', [PaymentController::class, 'createIntent']);
-    Route::middleware('auth:sanctum')->group(function () {
+    });
+    // Route::post('/create-payment-intent', [PaymentController::class, 'createIntent']);
+    Route::group(function () {
     Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
-});
     Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
+    // Handle reset request
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
+    });
 
 
+});
 
 
-
-// password reset routes
-// Send reset link
-Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
-// Handle reset request
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
