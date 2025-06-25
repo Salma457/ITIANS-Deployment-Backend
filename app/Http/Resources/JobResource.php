@@ -16,6 +16,7 @@ class JobResource extends JsonResource
             'qualifications' => $this->qualifications,
             'job_location' => $this->job_location,
             'job_type' => $this->job_type,
+            'applications_count' => $this->applications_count,
             'salary_range' => [
                 'min' => $this->salary_range_min,
                 'max' => $this->salary_range_max,
