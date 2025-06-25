@@ -83,15 +83,36 @@ class EmployerJobController extends Controller
         return response()->json($jobs);
     }
 
-    public function store(StoreJobRequest $request)
-    {
-        $job = Job::create($request->validated() + [
-            'employer_id' => $request->user()->id,
-            'posted_date' => now(),
-            'status' => Job::STATUS_PENDING
-        ]);
-        return new JobResource($job->load(['employer', 'statusChanger']));
+   public function store(StoreJobRequest $request)
+{
+    $user = $request->user();
+
+   
+    $payment = \App\Models\Payment::where('user_id', $user->id)
+        ->where('used_for_job', false)
+        ->latest()
+        ->first();
+
+    if (!$payment) {
+        return response()->json([
+            'message' => 'You need to make a payment before posting a job.'
+        ], 403);
     }
+
+    
+    $job = Job::create($request->validated() + [
+        'employer_id' => $user->id,
+        'posted_date' => now(),
+        'status' => Job::STATUS_PENDING
+    ]);
+
+   
+    $payment->used_for_job = true;
+    $payment->save();
+
+    return new JobResource($job->load(['employer', 'statusChanger']));
+}
+
 
     public function show(Request $request, Job $job)
     {

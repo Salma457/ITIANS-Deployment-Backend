@@ -23,13 +23,13 @@ class StoreItianProjectRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'project_title.required' => 'عنوان المشروع مطلوب',
-            'project_title.string' => 'عنوان المشروع يجب أن يكون نص',
-            'project_title.max' => 'عنوان المشروع يجب ألا يزيد عن 255 حرف',
-            'project_title.min' => 'عنوان المشروع يجب ألا يقل عن 3 أحرف',
-            'description.max' => 'وصف المشروع يجب ألا يزيد عن 2000 حرف',
-            'project_link.url' => 'رابط المشروع غير صحيح',
-            'project_link.max' => 'رابط المشروع طويل جداً',
+            'project_title.required' => 'Project title is required',
+            'project_title.string' => 'Project title must be a string',
+            'project_title.max' => 'Project title must not exceed 255 characters',
+            'project_title.min' => 'Project title must be at least 3 characters',
+            'description.max' => 'Project description must not exceed 2000 characters',
+            'project_link.url' => 'Project link must be a valid URL',
+            'project_link.max' => 'Project link is too long',
         ];
     }
 

@@ -8,19 +8,16 @@ use App\Http\Controllers\UserManagementController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ItianProfileController;
 use App\Http\Controllers\PostController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\Api\EmployerProfileController;
 use App\Http\Controllers\Api\ItianSkillProjectController;
 use App\Http\Controllers\PostReactionController;
 use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\CustomChatController;
 use App\Http\Controllers\CommentController;
 use App\Http\Controllers\ReportController;
-// use App\Services\RagEmbedderService;
-use Illuminate\Http\Request;
-use App\Http\Controllers\RagController;
-
-
-
+use App\Http\Controllers\AdminController;
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -31,11 +28,10 @@ Route::get('posts/{post}/reactions/details', [PostReactionController::class, 'ge
 Route::post('forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 Route::get('public-profile/{username}', [ItianProfileController::class, 'showPublic']);
-Route::get('employer-public-profile/{username}', [EmployerProfileController::class, 'showPublic']);
 
 // ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
-    // Auth
+        // Auth
     Route::get('logout', [AuthController::class, 'logout']);
 
     // Itian Profile
@@ -47,13 +43,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('itian-profile', [ItianProfileController::class, 'destroy']);
     Route::get('itian-profile/{user}', [ItianProfileController::class, 'publicShow']);
 
-    // Employer Profile
-    Route::post('employer-profile', [EmployerProfileController::class, 'store']);
+
+    // Employer Profile (Authenticated user's profile)
+    Route::get('employer-public-profile/{id}', [EmployerProfileController::class, 'showPublicProfileById']);
     Route::get('employer-profile', [EmployerProfileController::class, 'show']);
-    Route::put('employer-profile', [EmployerProfileController::class, 'update']);
-    Route::post('employer-profile/update', [EmployerProfileController::class, 'update']);
+    Route::post('employer-profile', [EmployerProfileController::class, 'store']);
+    // This is the new, cleaner update route for the authenticated user
+    // Route::put('employer-profile', [EmployerProfileController::class, 'update']); // <--- ADD THIS LINE
     Route::delete('employer-profile', [EmployerProfileController::class, 'destroy']);
-    Route::get('employer-profile/{user}', [EmployerProfileController::class, 'publicShow']);
+    // This route is still useful if an admin needs to update a specific employer by user_id
+    Route::post('employer-profiles/{user_id}/update', [EmployerProfileController::class, 'update']);
+
 
     // Posts
     Route::apiResource('posts', PostController::class);
@@ -116,6 +116,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('reports/{id}', [ReportController::class, 'destroy']);
     Route::put('reports/{id}/status', [ReportController::class, 'updateStatus']);
 
+        // ------------------- Notification Routes -------------------
+
+    Route::get('/my-notifications', [NotificationController::class, 'index']);
+    Route::delete('/notifications/delete-all', [NotificationController::class, 'deleteAllNotifications']);
+
     // Chat
     Route::prefix('mychat')->group(function () {
         Route::post('chat/auth', [CustomChatController::class, 'pusherAuth']);
@@ -134,38 +139,45 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('setActiveStatus', [CustomChatController::class, 'setActiveStatus']);
     });
 
+
     // ------------------- Admin Routes -------------------
     Route::middleware('admin')->group(function () {
-        // User Management
-        Route::get('users', [UserManagementController::class, 'allUsers']);
-        Route::get('users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
-        Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
-        Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
-        Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
+            // User Management
+            Route::get('users', [UserManagementController::class, 'allUsers']);
+            Route::get('users/unapproved-employers', [UserManagementController::class, 'getUnApprovedEmployers']);
+            Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
+            Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
+            Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
 
-        // Itian Registration Requests
-        Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
-        Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
+            // Itian Registration Requests
+            Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
+            Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
+            Route::get('/admin/job-pricing', [AdminController::class, 'showPricing']);
+            // Route::post('/admin/job-pricing', [AdminController::class, 'updatePricing']);
+            Route::post('/set-job-price', [AdminController::class, 'updatePricing']);
+            Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
+
     });
-});
-//Rag Routes
-Route::prefix('rag')->group(function () {
-    Route::get('/embed/posts', [RagController::class, 'embedPosts']);
-    Route::get('/embed/jobs', [RagController::class, 'embedJobs']);
-    Route::get('/search', [RagController::class, 'search']);
-    Route::get('/ask', [RagController::class, 'ask']);
-});
-// Route::get('/test-openai', function () {
-//     $response = Http::withHeaders([
-//         'Authorization' => 'Bearer ' . config('services.openai.key'),
-//         'Content-Type' => 'application/json',
-//     ])->post('https://api.openai.com/v1/chat/completions', [
-//         'model' => 'o1-mini',
-//         'messages' => [
-//             ['role' => 'user', 'content' => 'مرحبا، من أنت؟']
-//         ],
-//     ]);
 
-//     return $response->json();
-// });
+    Route::get('/myposts', [PostController::class, 'myPosts']);
+    // anyone can view comments
+    Route::get('posts/{post}/comments', [CommentController::class, 'index']);
 
+    Route::group(function () {
+    Route::post('posts/{post}/comments', [CommentController::class, 'store']);
+    Route::put('comments/{comment}', [CommentController::class, 'update']);
+    Route::delete('comments/{comment}', [CommentController::class, 'destroy']);
+    });
+    // Route::post('/create-payment-intent', [PaymentController::class, 'createIntent']);
+    Route::group(function () {
+    Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
+    Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
+    Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
+
+    Route::post('/forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
+    // Handle reset request
+    Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
+    });
+
+
+});
