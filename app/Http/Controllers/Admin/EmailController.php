@@ -8,7 +8,7 @@ use App\Models\User;
 
 class EmailController extends Controller
 {
-    public function getEmployers()
+     public function getEmployers()
     {
         $employers = User::where('role', 'employer')
                          ->select('id', 'name', 'email')
