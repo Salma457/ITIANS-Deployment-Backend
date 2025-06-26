@@ -22,6 +22,7 @@ class UpdateJobRequest extends FormRequest
             'description' => 'nullable|string',
             'requirements' => 'nullable|string',
             'qualifications' => 'nullable|string',
+            'status' => 'nullable|in:Open,Closed,Pending',
             'job_location' => ['nullable', Rule::in(Job::getLocations())],
             'job_type' => ['nullable', Rule::in(Job::getJobTypes())],
             'salary_range_min' => 'nullable|numeric|min:0',
