@@ -156,7 +156,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/job-pricing', [AdminController::class, 'showPricing']);
         Route::post('/set-job-price', [AdminController::class, 'updatePricing']);
         Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
+       
+     Route::get('/admin/employers', [AdminController::class, 'listEmployers']);
+     Route::post('/admin/send-round-ended-email', [AdminController::class, 'sendRoundEndedEmail']);
+
     });
+
+   Route::get('/employer-list', [\App\Http\Controllers\Admin\EmailController::class, 'getEmployers']);
 
     // Payments
     Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);

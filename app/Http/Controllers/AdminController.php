@@ -4,6 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\JobPricing;
+use App\Models\User;
+use App\Mail\RoundEndedNotification;
+use Illuminate\Support\Facades\Mail;
+use App\Models\AdminNotification;
 
 class AdminController extends Controller
 {
@@ -41,5 +45,27 @@ public function updatePricing(Request $request)
     return response()->json(['message' => 'Price updated']);
 }
 
-    
+   public function sendRoundEndedEmail(Request $request)
+{
+    $request->validate([
+        'message' => 'required|string',
+        'company_ids' => 'required|array',
+        'company_ids.*' => 'exists:users,id',
+    ]);
+
+    $companies = User::whereIn('id', $request->company_ids)->get();
+
+    foreach ($companies as $company) {
+        Mail::to($company->email)->send(new RoundEndedNotification($request->message, $company->name));
+    }
+
+    //  Save to DB
+    AdminNotification::create([
+        'message' => $request->message,
+        'company_ids' => $request->company_ids,
+    ]);
+
+    return response()->json(['message' => 'Emails sent and notification saved successfully']);
+}
+
 }
