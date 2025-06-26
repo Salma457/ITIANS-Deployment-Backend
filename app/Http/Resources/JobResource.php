@@ -10,6 +10,7 @@ class JobResource extends JsonResource
     {
         return [
             'id' => $this->id,
+            'company_name' =>$this->employer->employerProfile->company_name ?? null,
             'job_title' => $this->job_title,
             'description' => $this->description,
             'requirements' => $this->requirements,
@@ -31,6 +32,7 @@ class JobResource extends JsonResource
                 'name' => $this->employer->name,
                 // Add other employer fields as needed
             ],
+
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
         ];

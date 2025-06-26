@@ -34,6 +34,7 @@ Route::post('forgot-password', [PasswordResetController::class, 'sendResetLinkEm
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 Route::get('public-profile/{username}', [ItianProfileController::class, 'showPublic']);
 Route::get('public/jobs/{id}', [PublicJobController::class, 'show']);
+    Route::apiResource('posts', PostController::class);
 
 // ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
