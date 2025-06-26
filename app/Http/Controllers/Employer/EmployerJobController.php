@@ -67,12 +67,16 @@ class EmployerJobController extends Controller
 
         return response()->json([
             'data' => JobResource::collection($paginated->items()),
+
             'meta' => [
-                'current_page' => $paginated->currentPage(),
-                'last_page' => $paginated->lastPage(),
-                'per_page' => $paginated->perPage(),
-                'total' => $paginated->total(),
-            ],
+    'current_page' => $paginated->currentPage(),
+    'last_page' => $paginated->lastPage(),
+    'per_page' => $paginated->perPage(),
+    'total' => $paginated->total(),
+    'from' => ($paginated->currentPage() - 1) * $paginated->perPage() + 1,
+    'to' => ($paginated->currentPage() - 1) * $paginated->perPage() + count($paginated->items()),
+],
+
         ]);
     }
 
