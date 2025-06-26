@@ -18,6 +18,9 @@ class EmployerJobController extends Controller
     public function index(Request $request)
     {
         $query = Job::with(['employer', 'statusChanger']);
+        if ($request->filled('employer_id')) {
+            $query->where('employer_id', $request->employer_id);
+        }
 
         // Handle search (title or search param)
         $searchTerm = $request->filled('search') ? $request->search : ($request->filled('title') ? $request->title : null);
@@ -83,7 +86,7 @@ class EmployerJobController extends Controller
     public function employerJobs(Request $request)
     {
         $user = $request->user();
-        $jobs = Job::withTrashed()->where('employer_id', $user->id)->get();
+        $jobs = Job::withTrashed()->where('employer_id', $user->id)->withCount('applications')->get();
         return response()->json($jobs);
     }
 
@@ -120,11 +123,6 @@ class EmployerJobController extends Controller
 
     public function show(Request $request, Job $job)
     {
-        $user = $request->user();
-        // Only increment views if the user is NOT admin and NOT the employer who created the job
-        if (!$user || ($user->role !== 'admin' && $user->id !== $job->employer_id)) {
-            $job->increment('views_count');
-        }
         return new JobResource($job->load(['employer', 'statusChanger']));
     }
 

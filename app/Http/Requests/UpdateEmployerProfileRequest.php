@@ -11,7 +11,7 @@ class UpdateEmployerProfileRequest extends FormRequest
         return true;
     }
 
-    public function rules(): array
+    public function rules(): array  
     {
         return [
             'company_name' => 'sometimes|string|max:255',

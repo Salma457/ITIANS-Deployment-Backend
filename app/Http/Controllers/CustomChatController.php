@@ -409,6 +409,31 @@ class CustomChatController extends Controller
             'deleted' => $delete ? 1 : 0,
         ], 200);
     }
+    public function updateMessage(Request $request)
+    {
+        $messageId = $request->input('id');
+        $newBody = trim($request->input('body'));
+
+        $message = Message::where('id', $messageId)
+            ->where('from_id', Auth::id())
+            ->first();
+
+        if (!$message) {
+            return response()->json([
+                'status' => 0,
+                'message' => 'Message not found or not owned by you.',
+            ], 404);
+        }
+
+        $message->body = htmlentities($newBody, ENT_QUOTES, 'UTF-8');
+        $message->save();
+
+        return response()->json([
+            'status' => 1,
+            'message' => 'Message updated successfully.',
+            'updated_message' => $message,
+        ]);
+    }
 
     public function updateSettings(Request $request)
     {

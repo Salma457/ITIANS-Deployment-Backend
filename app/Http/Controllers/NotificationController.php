@@ -28,4 +28,24 @@ class NotificationController extends Controller
         return response()->json(['error' => 'Server error'], 500);
     }
 }
+
+public function deleteAllNotifications(Request $request)
+{
+    try {
+        $user = $request->user();
+
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        DB::table('notifications')
+            ->where('notifiable_id', $user->id)
+            ->delete();
+
+        return response()->json(['message' => 'All notifications deleted successfully']);
+    } catch (\Exception $e) {
+        \Log::error('Notification Deletion Error: ' . $e->getMessage());
+        return response()->json(['error' => 'Server error'], 500);
+    }
+}
 }
