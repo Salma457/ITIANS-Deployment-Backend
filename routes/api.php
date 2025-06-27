@@ -22,7 +22,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicJobController;
 use App\Http\Controllers\RagController;
-
+use App\Http\Controllers\TestimonialController;
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -34,7 +34,7 @@ Route::post('forgot-password', [PasswordResetController::class, 'sendResetLinkEm
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 Route::get('public-profile/{username}', [ItianProfileController::class, 'showPublic']);
 Route::get('public/jobs/{id}', [PublicJobController::class, 'show']);
-    Route::apiResource('posts', PostController::class);
+Route::apiResource('posts', PostController::class);
 
 // ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
@@ -163,6 +163,9 @@ Route::middleware('auth:sanctum')->group(function () {
      Route::get('/admin/employers', [AdminController::class, 'listEmployers']);
      Route::post('/admin/send-round-ended-email', [AdminController::class, 'sendRoundEndedEmail']);
 
+    Route::get('/admin/testimonials', [TestimonialController::class, 'adminIndex']);
+    Route::patch('/admin/testimonials/{testimonial}/status', [TestimonialController::class, 'updateStatus']);
+    Route::delete('/admin/testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
     });
 
    Route::get('/employer-list', [\App\Http\Controllers\Admin\EmailController::class, 'getEmployers']);
@@ -172,6 +175,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
     Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
+    Route::get('/testimonials', [TestimonialController::class, 'index']);
+    Route::post('/testimonials', [TestimonialController::class, 'store']);
 
 
 
