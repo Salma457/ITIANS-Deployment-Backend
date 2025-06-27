@@ -116,7 +116,12 @@ class JobApplicationController extends Controller
                         'created_at' => now()
                     ]
                 ]);
-
+\Log::info('Debug Application', [
+  'job_id' => $application->job->id ?? null,
+  'job_title' => $application->job->job_title ?? null,
+  'employer_id' => $application->job->employer->id ?? null,
+  'company_name' => $application->job->employer->employerProfile->company_name ?? null,
+]);
                 } catch (\Exception $e) {
                     \Log::error('Employer notification failed: ' . $e->getMessage());
                 }
@@ -199,7 +204,7 @@ class JobApplicationController extends Controller
                 'status' => 'required|in:approved,rejected,pending',
             ]);
 
-            $application = JobApplication::with('itian.user', 'job')->findOrFail($id);
+            $application = JobApplication::with('job.employer.employerProfile', 'itian.user')->findOrFail($id);
             $application->status = $request->status;
             $application->save();
 

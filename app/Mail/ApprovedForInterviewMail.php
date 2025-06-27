@@ -30,12 +30,16 @@ class ApprovedForInterviewMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.approved', // Blade file path: resources/views/emails/approved.blade.php
+            view: 'emails.approved',
             with: [
-                'user' => $this->application->itian->user, // تمرير المستخدم فقط
+                'application' => $this->application,
+                'user' => $this->application->itian->user,
+                'jobTitle' => $this->application->job->job_title ?? 'Not Available',
+                'companyName' => $this->application->job->employer->employerProfile->company_name ?? 'N/A',
             ]
         );
     }
+
 
     public function attachments(): array
     {

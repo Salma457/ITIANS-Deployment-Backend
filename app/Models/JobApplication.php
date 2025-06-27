@@ -22,10 +22,10 @@ class JobApplication extends Model
     function job(){
         return $this->belongsTo(Job::class);;
     }
-public function itian()
-{
-    return $this->belongsTo(ItianProfile::class, 'itian_id');
-}
+    public function itian()
+    {
+        return $this->belongsTo(ItianProfile::class, 'itian_id');
+    }
 
 
     function employer(){
