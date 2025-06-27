@@ -47,7 +47,6 @@ class JobApplicationController extends Controller
     public function store(Request $request)
     {
         try {
-            // التحقق من المصادقة
             if (!Auth::check()) {
                 return response()->json([
                     'success' => false,
@@ -55,7 +54,6 @@ class JobApplicationController extends Controller
                 ], 401);
             }
 
-            // التحقق من وجود ملف السيرة الذاتية
             if (!$request->hasFile('cv')) {
                 return response()->json([
                     'success' => false,
@@ -63,7 +61,6 @@ class JobApplicationController extends Controller
                 ], 422);
             }
 
-            // التحقق من صحة الملف
             $validator = Validator::make($request->all(), [
                 'job_id' => 'required|exists:jobs,id',
                 'cover_letter' => 'required|string',
@@ -77,7 +74,6 @@ class JobApplicationController extends Controller
                 ], 422);
             }
 
-            // البحث عن ملف تعريف ITIAN
             $itianProfile = ItianProfile::where('user_id', Auth::id())->first();
 
             if (!$itianProfile) {
@@ -87,10 +83,8 @@ class JobApplicationController extends Controller
                 ], 403);
             }
 
-            // تخزين الملف
             $storedPath = $request->file('cv')->store('job_applications', 'public');
 
-            // إنشاء طلب الوظيفة
             $jobApplication = JobApplication::create([
                 'job_id' => $request->job_id,
                 'itian_id' => $itianProfile->itian_profile_id,
@@ -99,6 +93,34 @@ class JobApplicationController extends Controller
                 'application_date' => now(),
                 'status' => 'pending'
             ]);
+            $job = Job::find($request->job_id);
+            $employerUserId = $job?->employer_id; 
+            \Log::info('Employer user ID: ' . $employerUserId);
+            if ($employerUserId) {
+                try {
+                   $response = Http::withHeaders([
+                    'Authorization' => 'Bearer ' . env('SUPABASE_SERVICE_ROLE_KEY'), // استخدم SERVICE_ROLE_KEY وليس ANON_KEY هنا لو تقدر
+                    'apikey' => env('SUPABASE_ANON_KEY'),
+                    'Content-Type' => 'application/json',
+                ])
+                ->post('https://obrhuhasrppixjwkznri.supabase.co/rest/v1/notifications', [
+                    [
+                        'user_id' => $employerUserId,
+                        'title' => 'New Job Application',
+                        'message' => 'Someone applied for your job: ' . $job->title,
+                        'notifiable_type' => 'App\\Models\\User',
+                        'notifiable_id' => $employerUserId,
+                        'type' => 'application',
+                        'seen' => false,
+                        'job_id' => $job->id,
+                        'created_at' => now()
+                    ]
+                ]);
+
+                } catch (\Exception $e) {
+                    \Log::error('Employer notification failed: ' . $e->getMessage());
+                }
+            }
 
             return response()->json([
                 'success' => true,
@@ -111,11 +133,10 @@ class JobApplicationController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Server error occurred.',
-                'error' => $e->getMessage() // في البيئة الانتاجية، أزل هذا السطر
+                'error' => $e->getMessage() 
             ], 500);
         }
     }
-    // get all employer's applications for all jobs
     public function getEmployerAllJobApplications()
     {
         try{
@@ -132,7 +153,6 @@ class JobApplicationController extends Controller
             ], 500);
         }
     }
-    // get all Itian job applications
     public function index()
     {
         try {
@@ -152,7 +172,6 @@ class JobApplicationController extends Controller
         }
     }
 
-    // show job application by Id
    public function show($id)
     {
         try {
@@ -207,7 +226,10 @@ class JobApplicationController extends Controller
                             'type' => 'system',
                             'seen' => false,
                             'job_id' => $application->job->id,
+                            'created_at' => now()
+
                         ]);
+                        \Log::info('Employer user ID: ' . $employerUserId);
 
                         } elseif ($request->status === 'rejected') {
                             Mail::to($email)->send(new RegistrationRequestRejected($application));
@@ -265,7 +287,9 @@ class JobApplicationController extends Controller
 
             return response()->json([
                 'hasApplied' => $application ? true : false,
-                'applicationId' => $application ? $application->id : null
+                'applicationId' => $application ? $application->id : null,
+                'status' => $application->status,
+
             ]);
         } catch (\Exception $e) {
             return response()->json([

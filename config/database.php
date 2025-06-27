@@ -30,6 +30,18 @@ return [
     */
 
     'connections' => [
+'supabase' => [
+    'driver' => 'pgsql',
+    'host' => env('SUPABASE_HOST'),
+    'port' => env('SUPABASE_PORT', 5432),
+    'database' => env('SUPABASE_DATABASE'),
+    'username' => env('SUPABASE_USERNAME'),
+    'password' => env('SUPABASE_PASSWORD'),
+    'charset' => 'utf8',
+    'prefix' => '',
+    'schema' => 'public',
+],
+
 
         'sqlite' => [
             'driver' => 'sqlite',

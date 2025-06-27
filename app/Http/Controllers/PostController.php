@@ -9,11 +9,22 @@ use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
-  public function index()
+  
+public function index(Request $request)
 {
     $userId = auth()->id();
+    $filterUserId = $request->query('user_id'); // جلب user_id من الكويري سترينج
 
-    $paginated = Post::with(['itian', 'reactions'])->latest()->paginate(10);
+    $query = Post::with(['itian', 'reactions'])->latest();
+
+    if ($filterUserId) {
+        // فلترة البوستات حسب user_id للـ itian
+        $query->whereHas('itian', function ($q) use ($filterUserId) {
+            $q->where('user_id', $filterUserId);
+        });
+    }
+
+    $paginated = $query->paginate(10);
 
     $posts = $paginated->getCollection()->map(function ($post) use ($userId) {
         return [

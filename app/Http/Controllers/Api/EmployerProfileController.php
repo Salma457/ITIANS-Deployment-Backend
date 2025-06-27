@@ -27,7 +27,10 @@ class EmployerProfileController extends Controller
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {
-            $data['company_logo'] = $request->file('company_logo')->store('company_logos', 'public');
+            $file = $request->file('company_logo');
+            Log::info('Uploading file: ' . $file->getClientOriginalName() . ', Type: ' . $file->getMimeType());
+
+            $data['company_logo'] = $file->store('company_logos', 'public');
         }
 
         $profile = $user->employerProfile()->create($data);
@@ -65,23 +68,36 @@ class EmployerProfileController extends Controller
             return response()->json(['message' => 'Employer profile not found'], 404);
         }
 
-        Log::info('Received update data for user_id ' . $user_id . ':', $request->all()); // Debug log
+        Log::info('Received update data for user_id ' . $user_id . ':', $request->all());
+        Log::info('Has file: ' . ($request->hasFile('company_logo') ? 'Yes' : 'No'));
+
+        if ($request->hasFile('company_logo')) {
+            $file = $request->file('company_logo');
+            Log::info('File details: Name=' . $file->getClientOriginalName() . ', Type=' . $file->getMimeType() . ', Size=' . $file->getSize());
+        }
+
+        $data = $request->validated();
 
         // Handle company logo upload
         if ($request->hasFile('company_logo')) {
+            // Delete old logo if exists
             if ($employerProfile->company_logo) {
                 Storage::disk('public')->delete($employerProfile->company_logo);
             }
-            $employerProfile->company_logo = $request->file('company_logo')->store('company_logos', 'public');
-        } elseif ($request->input('company_logo_removed')) {
+
+            $file = $request->file('company_logo');
+            $data['company_logo'] = $file->store('company_logos', 'public');
+            Log::info('New logo stored at: ' . $data['company_logo']);
+
+        } elseif ($request->input('company_logo_removed') === 'true') {
+            // Remove logo if requested
             if ($employerProfile->company_logo) {
                 Storage::disk('public')->delete($employerProfile->company_logo);
-                $employerProfile->company_logo = null;
+                $data['company_logo'] = null;
             }
         }
 
-        // Update validated data
-        $data = $request->validated();
+        // Update the profile
         $updated = $employerProfile->update($data);
 
         if (!$updated) {
@@ -90,12 +106,12 @@ class EmployerProfileController extends Controller
         }
 
         $employerProfile->refresh();
-        $data = $employerProfile->toArray();
-        $data['company_logo_url'] = $employerProfile->company_logo ? asset('storage/' . $employerProfile->company_logo) : null;
+        $responseData = $employerProfile->toArray();
+        $responseData['company_logo_url'] = $employerProfile->company_logo ? asset('storage/' . $employerProfile->company_logo) : null;
 
         return response()->json([
             'message' => 'Employer profile updated successfully',
-            'data' => $data
+            'data' => $responseData
         ]);
     }
 
@@ -116,56 +132,17 @@ class EmployerProfileController extends Controller
         return response()->json(['message' => 'Employer profile deleted']);
     }
 
-    /**
-     * Display a public employer profile by username.
-     */
-    public function publicShow(Request $request, $id)
-    {
-        try {
-            $profile = EmployerProfile::where('user_id', $id)->first();
-            if (!$profile) {
-                return response()->json(['message' => 'Employer profile not found.'], 404);
-            }
-            $user = $profile->user ?? null;
-            $data = $profile->toArray();
-            $data['name'] = $user ? $user->name : null;
-            $data['email'] = $user ? $user->email : null;
-            $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
-            if (method_exists($this, 'cleanResponseFields')) {
-                $this->cleanResponseFields($data);
-            }
-            return response()->json(['data' => $data]);
-        } catch (\Exception $e) {
-            Log::error('Error fetching public employer profile for user ID ' . $id . ': ' . $e->getMessage());
-            return response()->json(['message' => 'Server error occurred.'], 500);
-        }
-    }
-
     public function showPublicProfileById($id)
     {
         $profile = EmployerProfile::where('user_id', $id)->first();
+
         if (!$profile) {
             return response()->json(['message' => 'Employer profile not found'], 404);
         }
+
         $data = $profile->toArray();
         $data['company_logo_url'] = $profile->company_logo ? asset('storage/' . $profile->company_logo) : null;
-        // Trim and strip slashes from string fields
-        $fieldsToClean = [
-            'company_name',
-            'company_description',
-            'website_url',
-            'industry',
-            'company_size',
-            'location',
-            'contact_person_name',
-            'contact_email',
-            'phone_number',
-        ];
-        foreach ($fieldsToClean as $field) {
-            if (isset($data[$field]) && is_string($data[$field])) {
-                $data[$field] = stripslashes(trim($data[$field], "\"' "));
-            }
-        }
+
         return response()->json([
             'message' => 'Employer profile data retrieved successfully',
             'data' => $data

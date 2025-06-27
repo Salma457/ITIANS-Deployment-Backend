@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-
+use \App\Models\JobApplication;
 class Job extends Model
 {
         use SoftDeletes;
@@ -63,6 +63,11 @@ class Job extends Model
     public function statusChanger(): BelongsTo
     {
         return $this->belongsTo(User::class, 'status_changed_by');
+    }
+
+    public function applications()
+    {
+        return $this->hasMany(JobApplication::class);
     }
 
     public static function getJobTypes(): array
