@@ -411,7 +411,22 @@ public function getMyApplications()
             ], 500);
         }
     }
+public function getJobApplications($jobId)
+{
+    try {
+        $applications = JobApplication::with('itian.user')
+            ->where('job_id', $jobId)
+            ->get();
 
+        return response()->json($applications);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 
