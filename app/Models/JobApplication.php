@@ -13,7 +13,7 @@ class JobApplication extends Model
         'itian_id',
         'cover_letter',
         'status',
-        'job_id'
+        'job_id',
     ];
 
     function user(){

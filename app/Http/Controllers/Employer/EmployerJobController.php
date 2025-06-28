@@ -17,6 +17,18 @@ class EmployerJobController extends Controller
 {
     public function index(Request $request)
     {
+          Job::where('status', 'Open')
+            ->whereNotNull('application_deadline')
+            ->whereDate('application_deadline', '<', now()->toDateString())
+            ->update(['status' => 'Closed']);
+
+          // Step 2: Continue as usual
+        $query = Job::with(['employer', 'statusChanger']);
+        
+        if ($request->filled('employer_id')) {
+            $query->where('employer_id', $request->employer_id);
+        }
+
         $query = Job::with(['employer', 'statusChanger']);
         if ($request->filled('employer_id')) {
             $query->where('employer_id', $request->employer_id);
@@ -72,13 +84,13 @@ class EmployerJobController extends Controller
             'data' => JobResource::collection($paginated->items()),
 
             'meta' => [
-    'current_page' => $paginated->currentPage(),
-    'last_page' => $paginated->lastPage(),
-    'per_page' => $paginated->perPage(),
-    'total' => $paginated->total(),
-    'from' => ($paginated->currentPage() - 1) * $paginated->perPage() + 1,
-    'to' => ($paginated->currentPage() - 1) * $paginated->perPage() + count($paginated->items()),
-],
+            'current_page' => $paginated->currentPage(),
+            'last_page' => $paginated->lastPage(),
+            'per_page' => $paginated->perPage(),
+            'total' => $paginated->total(),
+            'from' => ($paginated->currentPage() - 1) * $paginated->perPage() + 1,
+            'to' => ($paginated->currentPage() - 1) * $paginated->perPage() + count($paginated->items()),
+        ],
 
         ]);
     }
@@ -86,39 +98,51 @@ class EmployerJobController extends Controller
     public function employerJobs(Request $request)
     {
         $user = $request->user();
-        $jobs = Job::withTrashed()->where('employer_id', $user->id)->withCount('applications')->get();
+
+        Job::where('employer_id', $user->id)
+            ->where('status', 'Open')
+            ->whereNotNull('application_deadline')
+            ->whereDate('application_deadline', '<', now()->toDateString())
+            ->update(['status' => 'Closed']);
+
+        $jobs = Job::withTrashed()
+            ->where('employer_id', $user->id)
+            ->withCount('applications')
+            ->get();
+
         return response()->json($jobs);
     }
 
-   public function store(StoreJobRequest $request)
-{
-    $user = $request->user();
 
-   
-    $payment = \App\Models\Payment::where('user_id', $user->id)
-        ->where('used_for_job', false)
-        ->latest()
-        ->first();
-
-    if (!$payment) {
-        return response()->json([
-            'message' => 'You need to make a payment before posting a job.'
-        ], 403);
-    }
+    public function store(StoreJobRequest $request)
+    {
+        $user = $request->user();
 
     
-    $job = Job::create($request->validated() + [
-        'employer_id' => $user->id,
-        'posted_date' => now(),
-        'status' => Job::STATUS_PENDING
-    ]);
+        $payment = \App\Models\Payment::where('user_id', $user->id)
+            ->where('used_for_job', false)
+            ->latest()
+            ->first();
 
-   
-    $payment->used_for_job = true;
-    $payment->save();
+        if (!$payment) {
+            return response()->json([
+                'message' => 'You need to make a payment before posting a job.'
+            ], 403);
+        }
 
-    return new JobResource($job->load(['employer', 'statusChanger']));
-}
+        
+        $job = Job::create($request->validated() + [
+            'employer_id' => $user->id,
+            'posted_date' => now(),
+            'status' => Job::STATUS_PENDING
+        ]);
+
+    
+        $payment->used_for_job = true;
+        $payment->save();
+
+        return new JobResource($job->load(['employer', 'statusChanger']));
+    }
 
 
     public function show(Request $request, Job $job)

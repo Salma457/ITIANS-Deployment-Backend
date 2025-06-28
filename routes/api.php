@@ -108,6 +108,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
     Route::patch('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
     Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
+   Route::get('my-applications', [JobApplicationController::class, 'getMyApplications']);
 
     // Itian Registration Requests
     Route::post('itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
