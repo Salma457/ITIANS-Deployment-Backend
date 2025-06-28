@@ -17,10 +17,11 @@ class EmployerJobController extends Controller
 {
     public function index(Request $request)
     {
-          Job::where('status', 'Open')
-            ->whereNotNull('application_deadline')
-            ->whereDate('application_deadline', '<', now()->toDateString())
-            ->update(['status' => 'Closed']);
+       Job::where('status', 'Open')
+    ->whereNotNull('application_deadline')
+    ->whereDate('application_deadline', '<', now()->addDay()->toDateString())
+    ->update(['status' => 'Closed']);
+
 
           // Step 2: Continue as usual
         $query = Job::with(['employer', 'statusChanger']);
