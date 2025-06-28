@@ -158,24 +158,73 @@ class JobApplicationController extends Controller
             ], 500);
         }
     }
-    public function index()
-    {
-        try {
-            $itianProfile = ItianProfile::where('user_id', Auth::id())->firstOrFail();
+  public function index(Request $request)
+{
+    try {
+        $query = Job::query();
 
-            $applications = JobApplication::where('itian_id', $itianProfile->itian_profile_id)
-                ->with('job') 
-                ->get();
-
-            return response()->json(['data' => $applications]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'success' => false,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage()
-            ], 500);
+        // Case-insensitive search by job title
+        if ($request->has('search') && $request->search) {
+            $search = strtolower($request->search);
+            $query->whereRaw('LOWER(job_title) LIKE ?', ["%{$search}%"]);
         }
+
+        // Apply filters
+        if ($request->has('filters')) {
+            $filters = $request->filters;
+
+            if (!empty($filters['job_type'])) {
+                $query->where('job_type', $filters['job_type']);
+            }
+
+            if (!empty($filters['job_location'])) {
+                $query->where('job_location', $filters['job_location']);
+            }
+
+            if (!empty($filters['status'])) {
+                $query->where('status', $filters['status']);
+            }
+
+            if (!empty($filters['employer_id'])) {
+                $query->where('employer_id', $filters['employer_id']);
+            }
+
+            if (!empty($filters['min_salary'])) {
+                $query->where('salary_range_min', '>=', $filters['min_salary']);
+            }
+
+            if (!empty($filters['max_salary'])) {
+                $query->where('salary_range_max', '<=', $filters['max_salary']);
+            }
+        }
+
+        // Sorting
+        if ($request->has('sort')) {
+            $sortField = ltrim($request->sort, '-');
+            $sortDirection = str_starts_with($request->sort, '-') ? 'desc' : 'asc';
+            $query->orderBy($sortField, $sortDirection);
+        } else {
+            $query->orderBy('posted_date', 'desc'); // default sort
+        }
+
+        // Pagination
+        $perPage = $request->input('perPage', 10);
+        $page = $request->input('page', 1);
+
+        $jobs = $query->paginate($perPage, ['*'], 'page', $page);
+
+        return response()->json($jobs);
+
+    } catch (\Exception $e) {
+        \Log::error('Job fetch failed: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
    public function show($id)
     {
