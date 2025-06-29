@@ -22,6 +22,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicJobController;
 use App\Http\Controllers\RagController;
+use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\TestimonialController;
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
@@ -33,6 +34,7 @@ Route::get('posts/{post}/reactions/details', [PostReactionController::class, 'ge
 Route::post('forgot-password', [PasswordResetController::class, 'sendResetLinkEmail']);
 Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])->name('password.reset');
 Route::get('public-profile/{username}', [ItianProfileController::class, 'showPublic']);
+Route::get('email/verify/{id}', [EmailVerificationController::class, 'verify'])->name('verification.verify')->middleware('signed');
 Route::get('public/jobs/{id}', [PublicJobController::class, 'show']);
 Route::apiResource('posts', PostController::class);
 
@@ -153,6 +155,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
         Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
         Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
+        Route::get('user', [UserManagementController::class, 'getUserData']);
 
         Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
         Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);

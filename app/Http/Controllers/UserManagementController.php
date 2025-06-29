@@ -13,10 +13,6 @@ class UserManagementController extends Controller
     //
     public function allUsers()
     {
-        // check user role
-        if (Auth::user()->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
 
         $users = User::latest()->get()->map(function ($user) {
             $data = [
@@ -39,27 +35,20 @@ class UserManagementController extends Controller
         return response()->json($users);
     }
 
+
+    
     public function getUnApprovedEmployers()
     {
-        // check user role
-        if (Auth::user()->role !== 'admin') {
-            return response()->json(['message' => 'Unauthorized'], 403);
-        }
-
-        $users = User::where('role', 'employer')
-            ->where('is_active', false)
+        $requests = EmployerRegistrationRequest::with('user')
+            ->where('status', 'Pending')
+            ->where('is_verified', true)
             ->latest()
-            ->get()
-            ->map(function ($user) {
-                return [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                ];
-            });
+            ->get();
 
-        return response()->json($users);
+        return response()->json($requests);
     }
+
+
 
     public function approveEmployer(Request $request, $id)
     {
@@ -138,5 +127,10 @@ class UserManagementController extends Controller
         $user->delete();
 
         return response()->json(['message' => 'User deleted successfully']);
+    }
+
+    public function getUserData(Request $request){
+        $user = Auth::user();
+        return response()->json($user);
     }
 }

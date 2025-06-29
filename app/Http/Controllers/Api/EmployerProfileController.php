@@ -29,7 +29,7 @@ class EmployerProfileController extends Controller
         if ($request->hasFile('company_logo')) {
             $file = $request->file('company_logo');
             Log::info('Uploading file: ' . $file->getClientOriginalName() . ', Type: ' . $file->getMimeType());
-            
+
             $data['company_logo'] = $file->store('company_logos', 'public');
         }
 
@@ -70,7 +70,7 @@ class EmployerProfileController extends Controller
 
         Log::info('Received update data for user_id ' . $user_id . ':', $request->all());
         Log::info('Has file: ' . ($request->hasFile('company_logo') ? 'Yes' : 'No'));
-        
+
         if ($request->hasFile('company_logo')) {
             $file = $request->file('company_logo');
             Log::info('File details: Name=' . $file->getClientOriginalName() . ', Type=' . $file->getMimeType() . ', Size=' . $file->getSize());
@@ -84,11 +84,11 @@ class EmployerProfileController extends Controller
             if ($employerProfile->company_logo) {
                 Storage::disk('public')->delete($employerProfile->company_logo);
             }
-            
+
             $file = $request->file('company_logo');
             $data['company_logo'] = $file->store('company_logos', 'public');
             Log::info('New logo stored at: ' . $data['company_logo']);
-            
+
         } elseif ($request->input('company_logo_removed') === 'true') {
             // Remove logo if requested
             if ($employerProfile->company_logo) {
