@@ -10,6 +10,10 @@ use App\Models\ItianRegistrationRequest;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Mail\VerifyRegistrationEmail;
+use Illuminate\Support\Facades\Mail;
+
+
 
 class AuthController extends Controller
 {
@@ -22,8 +26,9 @@ class AuthController extends Controller
             $request->all(),
             ['uuid' => $uuid] // اربط اليوزر بالـ UUID بتاع Supabase
         ));
+        Mail::to($user->email)->send(new VerifyRegistrationEmail($user));
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // $token = $user->createToken('auth_token')->plainTextToken;
         if ($request->hasFile('certificate')) {
             $path = $request->file('certificate')->store('certificates', 'public');
 
@@ -48,9 +53,7 @@ class AuthController extends Controller
         }
 
         return response()->json([
-            'message' => 'User registered successfully',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
+            'message' => 'User registered successfully. Please check your email to verify your account.',
             'user' => $user,
         ], 201);
     }

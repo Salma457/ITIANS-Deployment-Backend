@@ -16,7 +16,12 @@ class ItianRegistrationRequestController extends Controller
     public function index()
     {
         //
-        return ItianRegistrationRequest::with('user')->get();
+        // return ItianRegistrationRequest::with('user')->get();
+        $requests = ItianRegistrationRequest::with('user')
+            ->where('is_verified', true)
+            ->where('status', 'Pending')
+            ->get();
+        return response()->json($requests);
     }
 
     public function store(ItianRegistrationRequestRequest $request)
