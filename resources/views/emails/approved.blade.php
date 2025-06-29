@@ -269,7 +269,15 @@
             <div class="greeting">
                 Hi {{ $user->name ?? 'Applicant' }},
             </div>
-            
+            <div class="job-info">
+                <div class="job-title">
+                    Job Title: {{ $jobTitle }}
+                </div>
+                <div class="text-gray-600 text-sm">
+                 Company: {{ $companyName }}
+                </div>
+            </div>
+
             <p>We hope this message finds you well. Your application has been carefully reviewed by our recruitment team.</p>
             
             
@@ -293,14 +301,6 @@
             <!-- <div class="message">
                 Thank you for taking the time to apply for this position and for your interest in joining our team. While your background is impressive, we've decided to move forward with other candidates whose experience more closely matches our current needs. We encourage you to apply for future opportunities that align with your skills.
             </div> -->
-            
-            @if($application->cv ?? true)
-            <div style="text-align: center;">
-                <a href="{{ asset('storage/' . ($application->cv ?? '#')) }}" class="btn" target="_blank">
-                    📄 View Your CV
-                </a>
-            </div>
-            @endif
         </div>
         
         <div class="footer">

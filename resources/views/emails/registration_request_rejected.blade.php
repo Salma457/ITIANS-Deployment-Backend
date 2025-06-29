@@ -268,7 +268,11 @@
             <div class="greeting">
                 Hi {{ $user->name ?? 'Applicant' }},
             </div>
-            
+            <div class="job-info">
+                <div class="job-title">Job Title: {{ $jobTitle ?? 'Not Available' }}</div>
+                <div class="job-title">Company: {{ $companyName ?? 'N/A' }}</div>
+            </div>
+
             <p>We hope this message finds you well. Your application has been carefully reviewed by our recruitment team.</p>
             
             <div class="decorative-line"></div>
@@ -298,13 +302,6 @@
                 Wishing you all the best in your career journey!
             </div>
             
-            @if($application->cv ?? true)
-            <div style="text-align: center;">
-                <a href="{{ asset('storage/' . ($application->cv ?? '#')) }}" class="btn" target="_blank">
-                    📄 View Your CV
-                </a>
-            </div>
-            @endif
         </div>
         
         <div class="footer">

@@ -22,28 +22,37 @@ use Illuminate\Support\Facades\Http;
 class JobApplicationController extends Controller
 {
 
-    // display all applicants for a job (employer)
-   public function getJobApplications($job_id)
-    {
-        try {
-            $job = Job::findOrFail($job_id);     
+public function getMyApplications()
+{
+    try {
+        $itianProfile = ItianProfile::where('user_id', Auth::id())->first();
 
-            if (!$job->employer || $job->employer->id !== Auth::id()) {
-                return response()->json(['error' => 'Unauthorized'], 403);
-            }
-
-        $jobApplications = JobApplication::with('itian')->where("job_id", $job_id)->get();
-
-            return response()->json(['data' => $jobApplications]);
-
-        } catch (\Exception $e) {
+        if (!$itianProfile) {
             return response()->json([
                 'success' => false,
-                'message' => 'Something went wrong.',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'ITIAN profile not found.'
+            ], 404);
         }
+
+        $applications = JobApplication::with(['job', 'job.employer']) // <<< أهم حاجة هنا
+            ->where('itian_id', $itianProfile->itian_profile_id)
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'applications' => $applications
+        ]);
+    } catch (\Exception $e) {
+        \Log::error('Fetching my applications failed: ' . $e->getMessage());
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong.',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
     public function store(Request $request)
     {
         try {
@@ -84,16 +93,15 @@ class JobApplicationController extends Controller
             }
 
             $storedPath = $request->file('cv')->store('job_applications', 'public');
-
+            $job = Job::find($request->job_id);
             $jobApplication = JobApplication::create([
                 'job_id' => $request->job_id,
                 'itian_id' => $itianProfile->itian_profile_id,
                 'cv' => $storedPath,
                 'cover_letter' => $request->cover_letter,
                 'application_date' => now(),
-                'status' => 'pending'
+                'status' => 'pending',
             ]);
-            $job = Job::find($request->job_id);
             $employerUserId = $job?->employer_id; 
             \Log::info('Employer user ID: ' . $employerUserId);
             if ($employerUserId) {
@@ -153,17 +161,65 @@ class JobApplicationController extends Controller
             ], 500);
         }
     }
-    public function index()
+    public function index(Request $request)
     {
         try {
-            $itianProfile = ItianProfile::where('user_id', Auth::id())->firstOrFail();
+            $query = Job::query();
 
-            $applications = JobApplication::where('itian_id', $itianProfile->itian_profile_id)
-                ->with('job') 
-                ->get();
+            // Case-insensitive search by job title
+            if ($request->has('search') && $request->search) {
+                $search = strtolower($request->search);
+                $query->whereRaw('LOWER(job_title) LIKE ?', ["%{$search}%"]);
+            }
 
-            return response()->json(['data' => $applications]);
+            // Apply filters
+            if ($request->has('filters')) {
+                $filters = $request->filters;
+
+                if (!empty($filters['job_type'])) {
+                    $query->where('job_type', $filters['job_type']);
+                }
+
+                if (!empty($filters['job_location'])) {
+                    $query->where('job_location', $filters['job_location']);
+                }
+
+                if (!empty($filters['status'])) {
+                    $query->where('status', $filters['status']);
+                }
+
+                if (!empty($filters['employer_id'])) {
+                    $query->where('employer_id', $filters['employer_id']);
+                }
+
+                if (!empty($filters['min_salary'])) {
+                    $query->where('salary_range_min', '>=', $filters['min_salary']);
+                }
+
+                if (!empty($filters['max_salary'])) {
+                    $query->where('salary_range_max', '<=', $filters['max_salary']);
+                }
+            }
+
+            // Sorting
+            if ($request->has('sort')) {
+                $sortField = ltrim($request->sort, '-');
+                $sortDirection = str_starts_with($request->sort, '-') ? 'desc' : 'asc';
+                $query->orderBy($sortField, $sortDirection);
+            } else {
+                $query->orderBy('posted_date', 'desc'); // default sort
+            }
+
+            // Pagination
+            $perPage = $request->input('perPage', 10);
+            $page = $request->input('page', 1);
+
+            $jobs = $query->paginate($perPage, ['*'], 'page', $page);
+
+            return response()->json($jobs);
+
         } catch (\Exception $e) {
+            \Log::error('Job fetch failed: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Something went wrong.',
@@ -171,6 +227,7 @@ class JobApplicationController extends Controller
             ], 500);
         }
     }
+
 
    public function show($id)
     {
@@ -199,7 +256,7 @@ class JobApplicationController extends Controller
                 'status' => 'required|in:approved,rejected,pending',
             ]);
 
-            $application = JobApplication::with('itian.user', 'job')->findOrFail($id);
+            $application = JobApplication::with('job.employer.employerProfile', 'itian.user')->findOrFail($id);
             $application->status = $request->status;
             $application->save();
 
@@ -354,7 +411,22 @@ class JobApplicationController extends Controller
             ], 500);
         }
     }
+public function getJobApplications($jobId)
+{
+    try {
+        $applications = JobApplication::with('itian.user')
+            ->where('job_id', $jobId)
+            ->get();
 
+        return response()->json($applications);
+    } catch (\Exception $e) {
+        return response()->json([
+            'success' => false,
+            'message' => 'Something went wrong.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 

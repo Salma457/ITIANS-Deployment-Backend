@@ -26,7 +26,8 @@ class Job extends Model
     public const LOCATION_REMOTE = 'Remote';
     public const LOCATION_HYBRID = 'Hybrid';
 
-    protected $with = ['employer'];
+    protected $with = ['employer', 'employer.employerProfile'];
+
 
     protected $fillable = [
         'job_title',

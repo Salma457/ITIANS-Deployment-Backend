@@ -30,9 +30,12 @@ class RegistrationRequestRejected extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'emails.registration_request_rejected', // تأكد من وجود هذا الملف
+            view: 'emails.registration_request_rejected',
             with: [
                 'user' => $this->application->itian->user,
+                'application' => $this->application,
+                'jobTitle' => $this->application->job->job_title ?? 'Not Available',
+                'companyName' => $this->application->job->employer->employerProfile->company_name ?? 'N/A',
             ]
         );
     }
@@ -42,4 +45,3 @@ class RegistrationRequestRejected extends Mailable
         return [];
     }
 }
-

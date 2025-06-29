@@ -13,7 +13,7 @@ class JobApplication extends Model
         'itian_id',
         'cover_letter',
         'status',
-        'job_id'
+        'job_id',
     ];
 
     function user(){
@@ -22,10 +22,10 @@ class JobApplication extends Model
     function job(){
         return $this->belongsTo(Job::class);;
     }
-public function itian()
-{
-    return $this->belongsTo(ItianProfile::class, 'itian_id');
-}
+    public function itian()
+    {
+        return $this->belongsTo(ItianProfile::class, 'itian_id');
+    }
 
 
     function employer(){

@@ -23,6 +23,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\PublicJobController;
 use App\Http\Controllers\RagController;
 use App\Http\Controllers\EmailVerificationController;
+use App\Http\Controllers\TestimonialController;
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
@@ -35,6 +36,7 @@ Route::post('reset-password', [PasswordResetController::class, 'resetPassword'])
 Route::get('public-profile/{username}', [ItianProfileController::class, 'showPublic']);
 Route::get('email/verify/{id}', [EmailVerificationController::class, 'verify'])->name('verification.verify')->middleware('signed');
 Route::get('public/jobs/{id}', [PublicJobController::class, 'show']);
+Route::apiResource('posts', PostController::class);
 
 // ------------------- Authenticated Routes -------------------
 Route::middleware('auth:sanctum')->group(function () {
@@ -108,6 +110,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::patch('job-application/{id}', [JobApplicationController::class, 'update']);
     Route::patch('job-application/{id}/status', [JobApplicationController::class, 'updateStatus']);
     Route::delete('job-application/{id}', [JobApplicationController::class, 'destroy']);
+   Route::get('my-applications', [JobApplicationController::class, 'getMyApplications']);
 
     // Itian Registration Requests
     Route::post('itian-registration-requests', [ItianRegistrationRequestController::class, 'store']);
@@ -160,13 +163,24 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/admin/job-pricing', [AdminController::class, 'showPricing']);
         Route::post('/set-job-price', [AdminController::class, 'updatePricing']);
         Route::get('/job-price', [AdminController::class, 'getLatestPrice']);
+       
+     Route::get('/admin/employers', [AdminController::class, 'listEmployers']);
+     Route::post('/admin/send-round-ended-email', [AdminController::class, 'sendRoundEndedEmail']);
+
+    Route::get('/admin/testimonials', [TestimonialController::class, 'adminIndex']);
+    Route::patch('/admin/testimonials/{testimonial}/status', [TestimonialController::class, 'updateStatus']);
+    Route::delete('/admin/testimonials/{testimonial}', [TestimonialController::class, 'destroy']);
     });
+
+   Route::get('/employer-list', [\App\Http\Controllers\Admin\EmailController::class, 'getEmployers']);
 
     // Payments
     Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
     Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
+    Route::get('/testimonials', [TestimonialController::class, 'index']);
+    Route::post('/testimonials', [TestimonialController::class, 'store']);
 
 
 
