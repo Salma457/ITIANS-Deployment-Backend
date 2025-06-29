@@ -176,7 +176,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
     Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
-    Route::get('/testimonials', [TestimonialController::class, 'index']);
     Route::post('/testimonials', [TestimonialController::class, 'store']);
 
 
@@ -189,3 +188,4 @@ Route::prefix('rag')->group(function () {
         Route::get('/search', [RagController::class, 'search']);
         Route::get('/ask', [RagController::class, 'ask']);
 });
+    Route::get('/testimonials', [TestimonialController::class, 'index']);
