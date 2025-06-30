@@ -130,8 +130,14 @@ class UserManagementController extends Controller
         return response()->json(['message' => 'User deleted successfully']);
     }
 
-    public function getUserData(Request $request){
-        $user = Auth::user();
-        return response()->json($user);
-    }
+   public function getUserData(Request $request)
+{
+    $user = Auth::user()->load([
+        'itianProfile',
+        'employerProfile'
+    ]);
+
+    return response()->json($user);
+}
+
 }

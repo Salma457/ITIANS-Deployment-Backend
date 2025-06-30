@@ -58,34 +58,51 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(LoginRequest $request)
-    {
-        $credentials = $request->only('email', 'password');
+ public function login(Request $request)
+{
+    $credentials = $request->only('email', 'password');
 
-        if (!Auth::attempt($credentials)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
-        }
+    if (!Auth::attempt($credentials)) {
+        return response()->json(['message' => 'Invalid credentials'], 401);
+    }
 
-        $user = Auth::user();
+    $user = Auth::user();
 
-        if ($user->role != 'admin') {
-            if (!$user->is_active) {
-                return response()->json(['message' => 'User account is not active'], 403);
+    if (!$user->is_active) {
+        $message = 'Your account is not active.'; // Fallback message
+        $emailVerified = false;
+
+        if ($user->role === 'itian') {
+            $registrationRequest = \App\Models\ItianRegistrationRequest::where('user_id', $user->id)->first();
+            $emailVerified = $registrationRequest?->is_verified ?? false;
+            if ($emailVerified) {
+                $message = 'Your certificate is in progress, we will reply soon.';
+            }
+        } elseif ($user->role === 'employer') {
+            $registrationRequest = \App\Models\EmployerRegistrationRequest::where('user_id', $user->id)->first();
+            $emailVerified = $registrationRequest?->is_verified ?? false;
+            if ($emailVerified) {
+                $message = 'Your profile is in progress, please wait we will reply soon.';
             }
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // If the email is not verified, this message takes precedence.
+        if (!$emailVerified) {
+            $message = 'Please verify your email.';
+        }
 
-        $user->last_login = now();
-        $user->save();
-
-        return response()->json([
-            'message' => 'User logged in successfully',
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-            'user' => $user,
-        ]);
+        return response()->json(['message' => $message], 403);
     }
+
+
+    $token = $user->createToken('access-token')->plainTextToken;
+
+    return response()->json([
+        'access_token' => $token,
+        'user' => $user
+    ]);
+}
+
 
     public function logout(Request $request)
     {

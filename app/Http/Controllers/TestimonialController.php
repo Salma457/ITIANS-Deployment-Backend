@@ -79,12 +79,15 @@ class TestimonialController extends Controller
     public function updateStatus(Request $request, Testimonial $testimonial): JsonResponse
     {
         $request->validate([
-            'status' => ['required', Rule::in(['pending', 'approved', 'rejected'])]
-        ]);
+        'status' => ['required', Rule::in(['pending', 'approved', 'rejected'])],
+        'rating' => ['nullable', 'integer', 'min:1', 'max:5']
+    ]);
 
-        $testimonial->update([
-            'status' => $request->status
-        ]);
+    $testimonial->update([
+        'status' => $request->status,
+        'rating' => $request->rating ?? $testimonial->rating
+    ]);
+
 
         return response()->json([
             'success' => true,
