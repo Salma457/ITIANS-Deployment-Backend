@@ -79,6 +79,9 @@ public function createCheckoutSession(Request $request)
         return response()->json(['error' => $e->getMessage()], 400);
     }
 }
+
+
+
 public function hasUnusedPayment(Request $request)
 {
     $user = Auth::user();

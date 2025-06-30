@@ -147,6 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('updateMessage', [CustomChatController::class, 'updateMessage']);
 
     });
+        Route::get('user', [UserManagementController::class, 'getUserData']);
 
     // Admin Routes
     Route::middleware('admin')->group(function () {
@@ -155,7 +156,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('users/{id}/approve-employer', [UserManagementController::class, 'approveEmployer']);
         Route::post('users/{id}/reject-employer', [UserManagementController::class, 'rejectEmployer']);
         Route::delete('users/{id}', [UserManagementController::class, 'deleteUser']);
-        Route::get('user', [UserManagementController::class, 'getUserData']);
 
         Route::put('itian-registration-requests/{id}/review', [ItianRegistrationRequestController::class, 'review']);
         Route::get('itian-registration-requests/{id}', [ItianRegistrationRequestController::class, 'show']);
@@ -177,7 +177,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Payments
     Route::post('/create-checkout-session', [PaymentController::class, 'createCheckoutSession']);
     Route::get('/has-unused-payment', [PaymentController::class, 'hasUnusedPayment']);
-    Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
 
     Route::post('/testimonials', [TestimonialController::class, 'store']);
 
@@ -192,3 +191,4 @@ Route::prefix('rag')->group(function () {
         Route::get('/ask', [RagController::class, 'ask']);
 });
     Route::get('/testimonials', [TestimonialController::class, 'index']);
+    Route::post('/stripe/webhook', [PaymentController::class, 'handleStripeWebhook']);
