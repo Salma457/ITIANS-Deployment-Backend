@@ -101,6 +101,7 @@
             color: white;
             font-size: 1.8rem;
             font-weight: 600;
+            
             position: relative;
             z-index: 2;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
@@ -129,13 +130,13 @@
             text-align: center;
         }
         
-        .message::before {
+        /* .message::before {
             content: '📧';
             font-size: 2rem;
             display: block;
             text-align: center;
             margin-bottom: 1rem;
-        }
+        } */
         
         .btn {
             display: inline-block;
@@ -203,12 +204,8 @@
 </head>
 <body>
     <div class="email-container">
-        <div class="header">
-            <div class="logo">
-                <div class="logo-placeholder">
-                    <span class="logo-text">ITI</span>
-                </div>
-            </div>
+        <div class="header text-center">
+            
             <h1>Verify Your Email Address</h1>
         </div>
         
@@ -218,9 +215,7 @@
             </div>
             
             <p>Welcome to the ITI Professional Network! To complete your registration, please verify your email address by clicking the button below.</p>
-            
-            <div class="decorative-line"></div>
-            
+                        
             <div class="message">
                 <strong>One last step to get started!</strong>
                 <br>
