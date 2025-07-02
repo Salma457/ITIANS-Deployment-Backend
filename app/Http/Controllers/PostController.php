@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 
 class PostController extends Controller
 {
-  
+
 public function index(Request $request)
 {
     $userId = auth()->id();
