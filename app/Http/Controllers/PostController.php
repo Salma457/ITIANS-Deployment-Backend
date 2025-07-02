@@ -85,15 +85,27 @@ return response()->json([
 }
 
 
-   public function store(Request $request)
+public function store(Request $request)
 {
-    $data = $request->validate([
-        'title' => 'required|string',
-        'content' => 'required|string',
-        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
+    // أولًا: تأكد من أن أحد الحقول الثلاثة موجود
+    if (
+        !$request->filled('title') &&
+        !$request->filled('content') &&
+        !$request->hasFile('image')
+    ) {
+        return response()->json([
+            'error' => 'You must provide at least one of: title, content, or image.'
+        ], 422);
+    }
 
+    // بعدها اعمل validation على كل واحد بشكل منفصل (كلهم optional)
+    $data = $request->validate([
+        'title' => 'nullable|string|max:255',
+        'content' => 'nullable|string|max:5000',
+        'image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
     ]);
 
+    // رفع الصورة لو موجودة
     if ($request->hasFile('image')) {
         $imagePath = $request->file('image')->store('posts', 'public');
         $data['image'] = $imagePath;
@@ -107,13 +119,11 @@ return response()->json([
     }
 
     $post = Post::create([
-    'itian_id' => $itianProfile->itian_profile_id,
-    'title' => $data['title'],
-    'content' => $data['content'],
-    'image' => $data['image'] ?? null,
-
-]);
-
+        'itian_id' => $itianProfile->itian_profile_id,
+        'title' => $data['title'] ?? null,
+        'content' => $data['content'] ?? null,
+        'image' => $data['image'] ?? null,
+    ]);
 
     $post->load('itian');
 
@@ -122,7 +132,6 @@ return response()->json([
         'data' => $post
     ], 201);
 }
-
 
 
     public function show($id)
