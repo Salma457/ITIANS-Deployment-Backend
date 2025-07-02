@@ -11,14 +11,14 @@ class RagController extends Controller
     {
         $service = new RagEmbedderService();
         $service->processAllPosts();
-        return response()->json(['message' => 'تم توليد Embeddings للبوستات']);
+        return response()->json(['message' => 'Embeddings for posts have been generated successfully.']);
     }
 
     public function embedJobs()
     {
         $service = new RagEmbedderService();
         $service->processAllJobs();
-        return response()->json(['message' => 'تم توليد Embeddings للوظائف']);
+        return response()->json(['message' => 'Embeddings for jobs have been generated successfully.']);
     }
 
     public function search(Request $request)
@@ -26,7 +26,7 @@ class RagController extends Controller
         $query = $request->query('q');
 
         if (!$query) {
-            return response()->json(['error' => 'يرجى إرسال نص البحث في parameter اسمه q'], 400);
+            return response()->json(['error' => 'Please provide a search query using the "q" parameter.'], 400);
         }
 
         $service = new RagEmbedderService();
@@ -44,7 +44,7 @@ class RagController extends Controller
         $query = $request->query('q');
 
         if (!$query) {
-            return response()->json(['error' => 'يرجى إرسال نص السؤال في parameter اسمه q'], 400);
+            return response()->json(['error' => 'Please provide a question using the "q" parameter.'], 400);
         }
 
         $service = new RagEmbedderService();
