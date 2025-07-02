@@ -48,7 +48,7 @@ class RagController extends Controller
         }
 
         $service = new RagEmbedderService();
-        $answer = $service->askWithContext($query);
+        $answer = $service->askWithContext($query, 'gemini');
 
         return response()->json(['answer' => $answer]);
     }
