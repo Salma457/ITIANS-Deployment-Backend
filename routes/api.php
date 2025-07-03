@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Config;
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Employer\EmployerJobController;
@@ -26,7 +27,7 @@ use App\Http\Controllers\EmailVerificationController;
 use App\Http\Controllers\TestimonialController;
 // ------------------- Public Routes -------------------
 Route::post('register', [AuthController::class, 'register']);
-Route::post('login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login'])->name('login');
 Route::get('jobs', [EmployerJobController::class, 'index']);
 Route::get('jobs/{job}', [EmployerJobController::class, 'show']);
 Route::get('posts/{post}/comments', [CommentController::class, 'index']);
@@ -192,4 +193,16 @@ Route::prefix('rag')->group(function () {
         Route::get('/embed/jobs', [RagController::class, 'embedJobs']);
         Route::get('/search', [RagController::class, 'search']);
         Route::get('/ask', [RagController::class, 'ask']);
+});
+
+
+
+
+Route::get('/debug-db', function () {
+    return [
+        'DB_CONNECTION' => config('database.default'),
+        'DB_HOST' => config('database.connections.pgsql.host'),
+        'DB_DATABASE' => config('database.connections.pgsql.database'),
+        'DB_USERNAME' => config('database.connections.pgsql.username'),
+    ];
 });
